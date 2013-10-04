@@ -1,3 +1,4 @@
+@echo off
 echo "Start looking!"
 nslookup www.sfu.ca
 nslookup fraser.sfu.ca
