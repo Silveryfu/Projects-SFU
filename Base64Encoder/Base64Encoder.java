@@ -14,7 +14,7 @@ public class Base64Encoder {
 
 	@SuppressWarnings("resource")
 	public static void encode() throws IOException {
-		FileChannel fc = new FileInputStream("data1").getChannel();
+		FileChannel fc = new FileInputStream("data.in").getChannel();
 		ByteBuffer bb = ByteBuffer.allocate(BSIZE);
 		StringBuilder sb = new StringBuilder();
 		short s_fake = 0;
@@ -63,7 +63,7 @@ public class Base64Encoder {
 
 		}
 		
-		fc = new FileOutputStream("data3").getChannel();
+		fc = new FileOutputStream("data.out").getChannel();
 		fc.write(ByteBuffer.wrap(sb.toString().getBytes()));
 		fc.close();
 	}
