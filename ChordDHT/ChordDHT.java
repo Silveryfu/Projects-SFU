@@ -116,7 +116,7 @@ public class ChordDHT {
 					m = Integer.valueOf(str);
 					break;
 				case 3:
-					int id = Integer.valueOf(str);
+					int id = Integer.valueOf(str)%(s+1);  //hash the node into hashspace
 					dht_node d = new dht_node(id);
 					nodesMap.put(id, d);
 					SortedSet<Integer> keys = new TreeSet<Integer>(
@@ -126,14 +126,14 @@ public class ChordDHT {
 					}
 					break;
 				case 4:
-					int k = Integer.valueOf(str);
+					int k = Integer.valueOf(str)%(s+1);  //hash the key into hashspace 
 					SortedSet<Integer> keys2 = new TreeSet<Integer>(
 							nodesMap.keySet());
 					if (k > keys2.last()) {
 						nodesMap.get(keys2.first()).addFile(k);
 					} else
 						nodesMap.get(keys2.tailSet(k).first()).addFile(k);
-					queryDHT(k, nodesMap.get(3)); // always start from node 1 as
+					queryDHT(k, nodesMap.get(1)); // always start from node 1 as
 													// required
 					break;
 				}
