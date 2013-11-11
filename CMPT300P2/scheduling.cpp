@@ -5,6 +5,8 @@
 
 using namespace std;
 
+int const BLOCK = 1;
+
 void Processor() {
 	while(1) {
 		// system kernal space (short term scheduler)
@@ -14,8 +16,7 @@ void Processor() {
 		
 		//User space
 		for (int i=0; i < runningTime(pro); i++) {
-			if (pro.executeOneCommand() != BLOCK);
-			else {
+			if (pro.executeOneCommand() == BLOCK) {
 				whichScheduler = 1;
 				break;
 			}
