@@ -1,4 +1,9 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <pthread.h>
 
+using namespace std;
 
 void Processor() {
 	while(1) {
@@ -39,4 +44,8 @@ void midTern() { //interrupt of the block end
 
 void longTerm() {
 
+}
+
+int main() {
+	return 0;
 }
