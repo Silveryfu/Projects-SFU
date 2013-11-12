@@ -5,45 +5,58 @@
 
 using namespace std;
 
-int const BLOCK = 1;
+int const NO_INTTERUPT = 1;
+int const MID_TERM_TO_BQ = 2;
+int const MID_TERM_BQ_TO_RQ = 3;
+int const LONG_TERM_TO_RQ = 4;
+int const LONG_TERM_EXIT = 5;
 
-void Processor() {
+void masterProcessor() {
 	while(1) {
 		// system kernal space (short term scheduler)
-		Process pro = fetch process from ready queue;
-
-		int whichScheduler = 0;
+		Process pro = getProcessFromRQ();
+		while ( thereIsIdleProcessor() ) {
+			putProToIdleProcessor(pro);
+			pro = getProcessFromRQ();
+		}
+		int whichScheduler = NO_INTTERUPT;
 		
 		//User space
 		for (int i=0; i < runningTime(pro); i++) {
-			if (pro.executeOneCommand() == BLOCK) {
-				whichScheduler = 1;
-				break;
-			}
+			if ( (whichScheduler=pro.executeOneCommand()) != NO_INTTERUPT) break;
+			if ( (whichScheduler=longTermIntterupt()) != NO_INTTERUPT ) break;
+			if ( (whichScheduler=midTermIntterupt()) != NO_INTTERUPT) break;
 		}
 
 		// system kernal space
-		if (whichScheduler == 0) {
-			put pro into ready queue;	//short term scheduler behavior
+		switch (whichScheduler) {
+			case NO_INTTERUPT: {
+				putProcessToRQ(pro);
+			}; break;
+
+			case MID_TERM_TO_BQ: {
+				putProcessToBQ(pro);
+			}; break;
+
+			case MID_TERM_BQ_TO_RQ: {
+				putProcessToRQ(pro);
+				mvProFromBQtoRQ();
+			}; break;
+
+			case LONG_TERM_TO_RQ: {
+				putProcessToRQ(pro);
+				dealWithNewProcess();
+			}; break;
+
+			case LONG_TERM_EXIT: {
+				deleteThisProcess(pro);
+			}; break;
 		}
-		else if (whichScheduler == 1) {
-			put pro into block queue;	//mid term scheduler behavior
-		}
+
 	}
 }
 
-void midTern() { //interrupt of the block end
-	while (1) {
-		for (Process pro : block queue) {
-			if (pro received io) {
-				put pro into ready queue;
-			}
-		}
-	}
-}
-
-
-void longTerm() {
+void slaveProcessor() {
 
 }
 
