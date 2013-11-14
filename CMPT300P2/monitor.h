@@ -1,8 +1,6 @@
 #include <pthread.h>
 #define synchronized(M) for(Lock M##_lock=M; M##_lock; M##_lock.setUnlock())
 
-pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
-
 class Lock
 {
 public:
