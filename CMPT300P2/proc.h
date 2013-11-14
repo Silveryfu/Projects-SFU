@@ -3,8 +3,6 @@
 #include <ctime>
 #include <list>
 
-using namespace std;
-
 class Proc{
 public:
 
@@ -70,6 +68,7 @@ private:
     }
 };
 
+/*
 int main()  //for unit test
 {
     //Proc* p=new Proc(7, 3, 2);
@@ -79,3 +78,4 @@ int main()  //for unit test
     p->proc_execute();
     return 0;
 }
+*/
