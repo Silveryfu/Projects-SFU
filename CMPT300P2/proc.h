@@ -68,14 +68,3 @@ private:
     }
 };
 
-/*
-int main()  //for unit test
-{
-    //Proc* p=new Proc(7, 3, 2);
-    //Proc* p=new Proc(7, 3, 0);
-    Proc* p=new Proc(7, 3);
-    cout << p->getPriority() << endl;
-    p->proc_execute();
-    return 0;
-}
-*/
