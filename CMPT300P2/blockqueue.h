@@ -1,4 +1,5 @@
-#include "Monitor.h"
+#include "monitor.h"
+#include "proc.h"
 
 int const NO_PROCESS_NONBLOCKED=1;
 
