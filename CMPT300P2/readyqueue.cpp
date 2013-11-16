@@ -31,8 +31,12 @@ int ReadyMLFQ::getProc(Proc *procPtr){
     return 0;
 }
 
-int ReadyMLFQ::size(){
-    return readMLFQ[0].size()+readMLFQ[1].size()+readMLFQ[2].size();
+int ReadyMLFQ::isEmpty(){
+    int result;
+    synchronized(readyMLFQMutex){
+        result=(readMLFQ[0].size()+readMLFQ[1].size()+readMLFQ[2].size())==0;
+    }
+    return result;
 }
 
 ReadyMLFQ::~ReadyMLFQ(){

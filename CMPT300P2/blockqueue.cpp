@@ -1,5 +1,3 @@
-#ifndef BLOCKQUEUE_H
-#define BLOCKQUEUE_H
 #include "blockqueue.h"
 
 BlockQueue::BlockQueue(){
@@ -8,6 +6,7 @@ BlockQueue::BlockQueue(){
 }
 
 int BlockQueue::checkIO(Proc *procPtr){
+    int result=NO_PROCESS_NONBLOCKED;
     synchronized(blockQueueMutex){
         std::list<Proc>::iterator iter;
         for(iter=blockQueue.begin();iter!=blockQueue.end();iter++){
@@ -15,11 +14,12 @@ int BlockQueue::checkIO(Proc *procPtr){
             if(!temp.isBlocked()){
                 blockQueue.erase(iter);
                 *procPtr=temp;
-                return 0;
+                result=0;
+                break;
             }
         }
-        return NO_PROCESS_NONBLOCKED;
     }
+    return result;
 }
 
 void BlockQueue::putProc(Proc process){
@@ -28,4 +28,16 @@ void BlockQueue::putProc(Proc process){
     }
 }
 
-#endif
+int BlockQueue::getProc(Proc *procPtr){
+    int i;
+    synchronized(blockQueueMutex){
+        if(!blockQueue.empty()){
+            *procPtr=readMLFQ[i].front();
+            readMLFQ[i].pop();
+            break;
+        }
+    }
+    if(i==3)
+        return NO_PROCESS_IN_QUEUE;
+    return 0;
+}
