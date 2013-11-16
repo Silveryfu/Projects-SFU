@@ -17,6 +17,7 @@ public:
     int getID();
     int getPriority();
     void proc_execute();
+    void changePriority(int i);
 	
 protected:
     Proc(){};
