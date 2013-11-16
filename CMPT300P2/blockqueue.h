@@ -1,3 +1,5 @@
+#ifndef BlOCKQUEUE_H
+#define BlOCKQUEUE_H
 #include "monitor.h"
 #include "proc.h"
 
@@ -14,3 +16,4 @@ public:
 
     void putProc(Proc process);
 };
+#endif

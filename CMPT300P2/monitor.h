@@ -1,3 +1,5 @@
+#ifndef MONITOR_H
+#define MONITOR_H
 #include <pthread.h>
 #define synchronized(M) for(Lock M##_lock=M; M##_lock; M##_lock.setUnlock())
 
@@ -28,3 +30,4 @@ private:
 	pthread_mutex_t &m_mutex;
         bool m_locked;
 };
+#endif
