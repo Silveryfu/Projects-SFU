@@ -11,7 +11,7 @@ ReadyMLFQ::ReadyMLFQ(){
 
 void ReadyMLFQ::putProc(Proc *process){
     synchronized(readyMLFQMutex){
-        readMLFQ[process.getPriority()-1].push(process);
+        readMLFQ[process->getPriority()-1].push(process);
     }
 }
 
