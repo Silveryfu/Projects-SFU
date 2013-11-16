@@ -30,6 +30,10 @@ int Proc::getPriority(){
     return priority;
 }
 
+void Proc::changePriority(int i){
+    priority+=i;
+};
+
 void Proc::initialize_loc(){
     srand(time(NULL));
     int num_of_lines=10+rand()%100;   //a process will have 10 to 110 lines of code
