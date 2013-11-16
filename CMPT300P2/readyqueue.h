@@ -4,10 +4,12 @@
 #include "proc.h"
 #include <queue>
 
+int const LEVEL=3;
+
 class ReadyMLFQ{
 private:
     pthread_mutex_t readyMLFQMutex;
-    queue<Proc *> readMLFQ[3];
+    queue<Proc *> readMLFQ[LEVEL];
 public:
     ReadyMLFQ();
 
