@@ -1,12 +1,13 @@
-#ifndef BlOCKQUEUE_H
-#define BlOCKQUEUE_H
+#ifndef BLOCKQUEUE_H
+#define BLOCKQUEUE_H
 #include "monitor.h"
 #include "proc.h"
+#include <list>
 
 class BlockQueue{
 private:
     pthread_mutex_t blockQueueMutex;
-    std::list<Proc *> blockQueue;
+    list<Proc *> blockQueue;
 public:
     BlockQueue();
 
