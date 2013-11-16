@@ -1,11 +1,21 @@
-#include "header.h"
+#include "Processors.h"
 
-using namespace std;
+MasterProcessor :: void shortTerm() {
+	
+}
 
-void masterProcessor() {
+MasterProcessor :: void midTerm() {
+
+}
+
+MasterProcessor :: void longTerm() {
+
+}
+
+MasterProcessor :: void runningThread() {
 	while(1) {
 		// system kernal space (short term scheduler)
-		Process pro = getProcessFromRQ();
+		Proc pro = getProcessFromRQ();
 		while ( thereIsIdleProcessor() ) {
 			putProToIdleProcessor(pro);
 			pro = getProcessFromRQ();
@@ -47,10 +57,6 @@ void masterProcessor() {
 	}
 }
 
-void slaveProcessor() {
+SlaveProcessor:: void runningThread() {
 
-}
-
-int main() {
-	return 0;
 }
