@@ -47,8 +47,10 @@ void Proc::initialize_loc(){
 
 void Proc::proc_execute(){
     cout<<"This is process "<<procID<<" running."<<endl;
-    for(list<int>::const_iterator ci=loc.begin();ci!=loc.end();++ci){
-        cout<<*ci<<endl;
-    };
-    cout<<"Proc finishes."<<endl;
+    if(loc.size()==0) return 0;
+    else{
+        int element=loc.front();
+        loc.pop_front();
+        return element;
+    }
 }
