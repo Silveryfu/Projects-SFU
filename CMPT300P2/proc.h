@@ -16,7 +16,7 @@ public:
     int isBlocked();
     int getID();
     int getPriority();
-    void proc_execute();
+    int proc_execute();
     void changePriority(int i);
 	
 protected:

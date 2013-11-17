@@ -45,9 +45,9 @@ void Proc::initialize_loc(){
     }
 }
 
-void Proc::proc_execute(){
+int Proc::proc_execute(){
     cout<<"This is process "<<procID<<" running."<<endl;
-    if(loc.size()==0) return 0;
+    if(loc.size()==0) return -1;
     else{
         int element=loc.front();
         loc.pop_front();

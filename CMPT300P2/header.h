@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 #include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "proc.h"
 #include "monitor.h"
@@ -11,10 +15,7 @@
 #include "readyqueue.h"
 #include "blockqueue.h"
 
-int const NO_INTTERUPT = 1;
-int const MID_TERM_TO_BQ = 2;
-int const MID_TERM_BQ_TO_RQ = 3;
-int const LONG_TERM_TO_RQ = 4;
-int const LONG_TERM_EXIT = 5;
+int const SLAVES_NUMBER = 3;
+int const TIME_UNIT = 10;
 
 #endif

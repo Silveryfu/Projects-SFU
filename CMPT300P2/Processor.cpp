@@ -1,62 +1,87 @@
 #include "processors.h"
 
-MasterProcessor :: void shortTerm() {
-	
+// ---------------------- MASTER -------------------------
+
+MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
+	rq = rq0;
+	bq = bq0;
+	proc_pip = proc_pip0;
+	idle_pip = idle_pip0;
+   	if(pthread_create(&pt[0], NULL, &shortTerm, NULL)) {
+   	    printf("Could not create shortTerm on MasterProcessor\n");
+   	}
+   	if(pthread_create(&pt[1], NULL, &midTerm, NULL)) {
+   	    printf("Could not create midTerm on MasterProcessor\n");
+   	}
+   	if(pthread_create(&pt[2], NULL, &longTerm, NULL)) {
+   	    printf("Could not create longTerm on MasterProcessor\n");
+   	}
+
 }
 
-MasterProcessor :: void midTerm() {
+void MasterProcessor::shortTerm() {
+	ProcAndTime * pats[SLAVES_NUMBER];
+	for (int i=0; i<SLAVES_NUMBER; i++) pats[i] = NULL;
 
-}
-
-MasterProcessor :: void longTerm() {
-
-}
-
-MasterProcessor :: void runningThread() {
-	while(1) {
-		// system kernal space (short term scheduler)
-		Proc pro = getProcessFromRQ();
-		while ( thereIsIdleProcessor() ) {
-			putProToIdleProcessor(pro);
-			pro = getProcessFromRQ();
+	while (1) {
+		Proc *pro;
+		pro = rq.getProc();
+		if (pro != NULL) {
+			for (int i=0; i<SLAVES_NUMBER; i++) {
+				if ( read() ) {
+					if (pat[i] != NULL) {
+						delete pat[i];
+						pat[i] = NULL;
+					}
+					pat[i] = new ProcAndTime(pro, TIME_UNIT * pro->getPriority() );
+					write(proc_pip[1], &pats[i], sizeof(ProcAndTime *));
+				}
+			}
 		}
-		int whichScheduler = NO_INTTERUPT;
-		
-		//User space
-		for (int i=0; i < runningTime(pro); i++) {
-			if ( (whichScheduler=pro.executeOneCommand()) != NO_INTTERUPT) break;
-			if ( (whichScheduler=longTermIntterupt()) != NO_INTTERUPT ) break;
-			if ( (whichScheduler=midTermIntterupt()) != NO_INTTERUPT) break;
+	}
+}
+
+void MasterProcessor::midTerm() {
+	while (1) {
+
+	}
+}
+
+void MasterProcessor::longTerm() {
+	while (1) {
+
+	}
+}
+
+// -------------------- SLAVES ----------------------
+
+void SlaveProcessor::running() {
+	while (1) {
+		ProcAndTime *pat;
+		int const idle = 1;
+		write(idle_pip[1], &idle, sizeof(int)); //Block Write
+		read(proc_pip[0], pat, sizeof(ProcAndTime));  //Block Read
+
+		int which = 1;
+		for (int i=0; i<pat->timeQuan; i++) {
+			which = pat->proc_execute();
+			if (which == -1 || which == 0) break;
 		}
 
-		// system kernal space
-		switch (whichScheduler) {
-			case NO_INTTERUPT: {
-				putProcessToRQ(pro);
-			}; break;
+		switch(which) {
+			case 0: {  //Process IO Block
 
-			case MID_TERM_TO_BQ: {
-				putProcessToBQ(pro);
-			}; break;
+			} break;
+			case -1: { //Process finish executing and exit
 
-			case MID_TERM_BQ_TO_RQ: {
-				putProcessToRQ(pro);
-				mvProFromBQtoRQ();
-			}; break;
-
-			case LONG_TERM_TO_RQ: {
-				putProcessToRQ(pro);
-				dealWithNewProcess();
-			}; break;
-
-			case LONG_TERM_EXIT: {
-				deleteThisProcess(pro);
-			}; break;
+			} break;
+			default: if (which > 0) { //Normal switch of short term
+				if ( pat-pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
+				else pat->pro->changePriority(0);
+				rq.putProc(pat->pro);
+			} break;
 		}
 
 	}
 }
 
-SlaveProcessor:: void runningThread() {
-
-}

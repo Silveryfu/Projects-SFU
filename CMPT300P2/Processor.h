@@ -2,20 +2,7 @@
 
 class MasterProcessor {
 public:
-	MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0) {
-		rq = rq0;
-		bq = bq0;
-    	if(pthread_create(&pt, NULL, &shortTerm, NULL)) {
-    	    printf("Could not create shortTerm on MasterProcessor\n");
-    	}
-    	if(pthread_create(&pt, NULL, &midTerm, NULL)) {
-    	    printf("Could not create midTerm on MasterProcessor\n");
-    	}
-    	if(pthread_create(&pt, NULL, &longTerm, NULL)) {
-    	    printf("Could not create longTerm on MasterProcessor\n");
-    	}
-	}
-
+	MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
 	~MasterProcessor() {
 	}
 
@@ -27,22 +14,38 @@ private:
 	void shortTerm();
 	void midTerm();
 	void longTerm();
-	pthread_t pt;
+	pthread_t pt[3];
 	ReadyMLFQ &rq;
 	BlockQueue &bq;
+	int **pip;
 };
 
 
 class SlaveProcessor {
 public:
-	SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0) {
-		if(pthread_create(&pt, NULL, &running, NULL)) {
-    	    printf("Could not create thread on MasterProcessor\n");
-    	}
+	SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *proc_pip0, int *idle_pip0) {
+		proc_pip = proc_pip0;
+		idle_pip = idle_pip0;
 	}
 
+protected:
+	SlaveProcessor(){};
+	
 private:
 	void running();
 	pthread_t pt;
-
+	int *proc_pip;
+	int *idle_pip;
 };
+
+class ProcAndTime() {
+public:
+	ProcAndTime(Proc *pro0, int timeQuan0) {
+		pro = pro0;
+		timeQuan = timeQuan0;
+	}
+	Proc *pro;
+	int timeQuan;
+protected:
+	ProcAndTime(){};
+}
