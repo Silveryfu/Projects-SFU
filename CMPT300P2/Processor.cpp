@@ -21,20 +21,26 @@ MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip
 
 void MasterProcessor::shortTerm() {
 	ProcAndTime * pats[SLAVES_NUMBER];
-	for (int i=0; i<SLAVES_NUMBER; i++) pats[i] = NULL;
+	for (int i=0; i<SLAVES_NUMBER; i++) {
+		//Setting non block
+		if ( fcntl(idle_pip[0], F_SETFL, O_NONBLOCK) == -1) printf("non block fail on slave %d\n");
+		pats[i] = NULL;
+	}
 
 	while (1) {
 		Proc *pro;
 		pro = rq.getProc();
 		if (pro != NULL) {
 			for (int i=0; i<SLAVES_NUMBER; i++) {
-				if ( read() ) {
+				int idle = 0;
+				read(idle_pip[i][0], &idle, sizeof(int));
+				if ( idle == 1 ) {
 					if (pat[i] != NULL) {
 						delete pat[i];
 						pat[i] = NULL;
 					}
-					pat[i] = new ProcAndTime(pro, TIME_UNIT * pro->getPriority() );
-					write(proc_pip[1], &pats[i], sizeof(ProcAndTime *));
+					pat[i] = new ProcAndTime(pro, TIME_UNIT * pro->getPriority());
+					write(proc_pip[i][1], &pats[i], sizeof(ProcAndTime *));
 				}
 			}
 		}
@@ -55,12 +61,19 @@ void MasterProcessor::longTerm() {
 
 // -------------------- SLAVES ----------------------
 
+SlaveProcessor::SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *s_proc_pip0, int *s_idle_pip0) {
+	s_proc_pip = s_proc_pip0;
+	s_idle_pip = s_idle_pip0;
+	rq = rq0;
+	bq = bq0;
+}
+
 void SlaveProcessor::running() {
 	while (1) {
 		ProcAndTime *pat;
 		int const idle = 1;
-		write(idle_pip[1], &idle, sizeof(int)); //Block Write
-		read(proc_pip[0], pat, sizeof(ProcAndTime));  //Block Read
+		write(s_idle_pip[1], &idle, sizeof(int)); //Block Write
+		read(s_proc_pip[0], pat, sizeof(ProcAndTime));  //Block Read
 
 		int which = 1;
 		for (int i=0; i<pat->timeQuan; i++) {
@@ -70,7 +83,8 @@ void SlaveProcessor::running() {
 
 		switch(which) {
 			case 0: {  //Process IO Block
-
+				pat->pro->setBlockState(1);
+				bq.putProc(pat->pro);
 			} break;
 			case -1: { //Process finish executing and exit
 

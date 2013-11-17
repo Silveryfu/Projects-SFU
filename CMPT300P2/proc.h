@@ -17,6 +17,7 @@ public:
     int getID();
     int getPriority();
     int proc_execute();
+    void setBlockState();
     void changePriority(int i);
 	
 protected:
