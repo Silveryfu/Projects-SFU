@@ -21,7 +21,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip
 
 void MasterProcessor::shortTerm() {
 	//This array is to store the wrap object from class ProcAndTime for each slave processor
-	ProcAndTime * pats[SLAVES_NUMBER];
+	ProcAndTime * pats[SLAVES_NUMBER];   //*****do not need an array here? 
 	for (int i=0; i<SLAVES_NUMBER; i++) {
 		//Setting non block for reading the idle_pipe
 		if ( fcntl(idle_pip[0], F_SETFL, O_NONBLOCK) == -1) printf("non block fail on slave %d\n");
@@ -31,7 +31,7 @@ void MasterProcessor::shortTerm() {
 	while (1) {
 		Proc *pro;
 		pro = rq.getProc(); //Get a process from ready queue
-		if (pro != NULL) {	//If there still at least a process in ready queue
+		if (pro != NULL) {	//If there still at least a process in ready queue   /******may busy waiting
 			for (int i=0; i<SLAVES_NUMBER; i++) {
 				int idle = 0;
 				read(idle_pip[i][0], &idle, sizeof(int)); //non-block reading the idle_pipe
