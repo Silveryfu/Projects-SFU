@@ -30,6 +30,10 @@ int Proc::getPriority(){
     return priority;
 }
 
+void Proc::setBlockState(int s) {
+    blockState = s;
+}
+
 void Proc::changePriority(int i){
     priority+=i;
 };

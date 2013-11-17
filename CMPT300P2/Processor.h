@@ -7,8 +7,7 @@ public:
 	}
 
 protected: 
-	MasterProcessor() {
-	}
+	MasterProcessor(){}
 
 private:
 	void shortTerm();
@@ -17,25 +16,25 @@ private:
 	pthread_t pt[3];
 	ReadyMLFQ &rq;
 	BlockQueue &bq;
-	int **pip;
+	int **proc_pip;
+	int **idle_pip;
 };
 
 
 class SlaveProcessor {
 public:
-	SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *proc_pip0, int *idle_pip0) {
-		proc_pip = proc_pip0;
-		idle_pip = idle_pip0;
-	}
+	SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *proc_pip0, int *idle_pip0);
 
 protected:
-	SlaveProcessor(){};
-	
+	SlaveProcessor(){}
+
 private:
 	void running();
 	pthread_t pt;
-	int *proc_pip;
-	int *idle_pip;
+	ReadyMLFQ &rq;
+	BlockQueue &bq;
+	int *s_proc_pip;
+	int *s_idle_pip;
 };
 
 class ProcAndTime() {
