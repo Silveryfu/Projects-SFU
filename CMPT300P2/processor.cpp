@@ -1,6 +1,9 @@
 #include "header.h"
 
-// ---------------------- MASTER -------------------------
+/*This file consists of both master processor's and slave processor's
+ *definition.*/
+
+/* ---------------------- MASTER Processor------------------------- */
 
 MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
 	rq = rq0;
@@ -16,12 +19,13 @@ MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip
    	if(pthread_create(&pt[2], NULL, &longTerm, NULL)) {  //Create long-term scheduler as a thread
    	    printf("Could not create longTerm on MasterProcessor\n");
    	}
-   	all_processes.clear();
+	all_processes.clear();
+   	pthread_exit(NULL);
 }
 
 void MasterProcessor::shortTerm() {
 	//This array is to store the wrap object from class ProcAndTime for each slave processor
-	ProcAndTime * pats[SLAVES_NUMBER];   //*****do not need an array here? 
+	ProcAndTime * pats[SLAVES_NUMBER];
 	for (int i=0; i<SLAVES_NUMBER; i++) {
 		//Setting non block for reading the idle_pipe
 		if ( fcntl(idle_pip[0], F_SETFL, O_NONBLOCK) == -1) printf("non block fail on slave %d\n");
@@ -67,7 +71,7 @@ void MasterProcessor::longTerm() {
 	int i=1;
 	while (1) {
 		sleep(1.0/CREATE_PROC_FREQUENCY);
-		Proc *pro = new Proc(rand()%LEVEL + 1, i);
+		Proc *pro = new Proc(i);
 		all_processes.push_back(pro);
 		rq.putProc(pro);
 		if (i > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while, and cut the i to its half
@@ -77,7 +81,7 @@ void MasterProcessor::longTerm() {
 	}
 }
 
-// -------------------- SLAVES ----------------------
+/* -------------------- SLAVES ---------------------- */
 
 SlaveProcessor::SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *s_proc_pip0, int *s_idle_pip0) {
 	rq = rq0;
@@ -96,28 +100,26 @@ void SlaveProcessor::running() {
 		write(s_idle_pip[1], &idle, sizeof(int)); //Write back the idle signal to idle_pipe
 		read(s_proc_pip[0], &pat, sizeof(ProcAndTime *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
-		int which = 1;
+		int io_or_not_io = 1;
 		for (int i=0; i<pat->timeQuan; i++) {
-			which = pat->proc_execute();
-			if (which == -1 || which == 0) break;
+			io_or_not_io = pat->proc_execute();
+			if (io_or_not_io == -1 || io_or_not_io == 0) break;
 		}
 
-		switch(which) {
-			case 0: {  //Process IO Block
+		switch(io_or_not_io) {
+			case 0: //Process IO Block
 				pat->pro->setBlockState(1);
 				bq.putProc(pat->pro);
-			} break;
-			case -1: { //Process finish executing and exit
-
-			} break;
-			default: if (which > 0) { //Normal switch of short term
-				if ( pat-pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
+			        break;
+			case -1://Process finish executing and exit
+				cout<<"a process finishes."<<endl;
+			        break;
+			default:
+				if ( pat->pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
 				else pat->pro->changePriority(0);
 				rq.putProc(pat->pro);
-			} break;
-		}
-
-	}
+			        break;
+			}
 }
 
 
