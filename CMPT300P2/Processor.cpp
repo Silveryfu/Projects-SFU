@@ -48,14 +48,30 @@ void MasterProcessor::shortTerm() {
 }
 
 void MasterProcessor::midTerm() {
+	srand(time(NULL));
 	while (1) {
-
+		vector<Proc *> bqV = bq.getList();
+		int length = bqV.size();
+		int index = rand() % (length * IO_WAIT_TIME);
+		if (index < length) {
+			bqV[index].setBlockState(0);
+			Proc * pro = bq.checkIO();
+			if (pro == NULL) rq.putProc(pro);
+		}
 	}
 }
 
 void MasterProcessor::longTerm() {
+	int i=1;
+	srand(time(NULL));
 	while (1) {
-
+		sleep(0.3);
+		Proc *pro = new Proc(rand()%LEVEL + 1, i);
+		rq.putProc(pro);
+		if (i > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while, and cut the half of i
+			sleep(10);
+			i /= 2;
+		} 
 	}
 }
 

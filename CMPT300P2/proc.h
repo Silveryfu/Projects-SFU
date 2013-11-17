@@ -1,9 +1,6 @@
 #ifndef PROC_H
 #define PROC_H
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <list>
+#include "header.h"
 
 using namespace std;
 

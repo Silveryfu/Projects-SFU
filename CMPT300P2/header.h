@@ -6,10 +6,11 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <queue>
 #include <list>
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
 
 #include "proc.h"
 #include "monitor.h"
@@ -21,5 +22,7 @@ using namespace std;
 
 int const SLAVES_NUMBER = 3;
 int const TIME_UNIT = 10;
+int const MAX_PROCESS_NUMBER = 256;
+int const IO_WAIT_TIME = 3;
 
 #endif
