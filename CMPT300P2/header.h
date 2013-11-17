@@ -24,5 +24,6 @@ int const SLAVES_NUMBER = 3;
 int const TIME_UNIT = 10;
 int const MAX_PROCESS_NUMBER = 256;
 int const IO_WAIT_TIME = 3;
+double const CREATE_PROC_FREQUENCY = 10;
 
 #endif

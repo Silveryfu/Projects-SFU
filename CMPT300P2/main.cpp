@@ -19,5 +19,7 @@ int main() {
 	for (int i=0; i<SLAVES_NUMBER; i++) 
 		SlP[i] = new SlaveProcessor(*rq, *bq, proc_pip[i], idle_pip[i]); 
 
+	sleep(600);
+
 	return 0;
 }

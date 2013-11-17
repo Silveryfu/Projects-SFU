@@ -7,6 +7,9 @@ class MasterProcessor {
 public:
 	MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
 	~MasterProcessor() {
+		for (vector::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
+			if (*it != NULL) delete *it;
+		}
 	}
 
 protected: 
@@ -21,6 +24,7 @@ private:
 	BlockQueue &bq;
 	int **proc_pip;
 	int **idle_pip;
+	vector<Proc *> all_processes; //Store all the processes created from long-term scheduler
 };
 
 
@@ -40,6 +44,7 @@ private:
 	int *s_idle_pip;
 };
 
+//This class wrap process and running time together, in order to pass this info to slave processor
 class ProcAndTime() {
 public:
 	ProcAndTime(Proc *pro0, int timeQuan0) {
