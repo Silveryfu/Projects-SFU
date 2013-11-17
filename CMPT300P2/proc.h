@@ -2,8 +2,6 @@
 #define PROC_H
 #include "header.h"
 
-using namespace std;
-
 class Proc{
 public:
 
