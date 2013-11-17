@@ -1,8 +1,6 @@
 #ifndef READYQUEUE_H
 #define READYQUEUE_H
-#include "monitor.h"
-#include "proc.h"
-#include <queue>
+#include "header.h"
 
 int const LEVEL=3;
 

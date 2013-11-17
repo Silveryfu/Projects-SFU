@@ -1,4 +1,4 @@
-#include "blockqueue.h"
+#include "header.h"
 
 BlockQueue::BlockQueue(){
     pthread_mutex_init(&blockQueueMutex,NULL);
