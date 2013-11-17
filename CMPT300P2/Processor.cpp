@@ -78,10 +78,13 @@ void MasterProcessor::longTerm() {
 // -------------------- SLAVES ----------------------
 
 SlaveProcessor::SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *s_proc_pip0, int *s_idle_pip0) {
-	s_proc_pip = s_proc_pip0;
-	s_idle_pip = s_idle_pip0;
 	rq = rq0;
 	bq = bq0;
+	s_proc_pip = s_proc_pip0;
+	s_idle_pip = s_idle_pip0;
+	if(pthread_create(&pt, NULL, &running, NULL)) {
+   	    printf("Could not create longTerm on MasterProcessor\n");
+   	}
 }
 
 void SlaveProcessor::running() {

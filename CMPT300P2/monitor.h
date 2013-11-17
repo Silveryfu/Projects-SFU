@@ -1,6 +1,7 @@
 #ifndef MONITOR_H
 #define MONITOR_H
-#include <pthread.h>
+#include "header.h"
+
 #define synchronized(M) for(Lock M##_lock=M; M##_lock; M##_lock.setUnlock())
 
 class Lock

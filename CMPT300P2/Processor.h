@@ -1,3 +1,6 @@
+#ifdef PROCESSOR_H
+#define PROCESSOR_H
+
 #include "header.h"
 
 class MasterProcessor {
@@ -48,3 +51,5 @@ public:
 protected:
 	ProcAndTime(){};
 }
+
+#endif
