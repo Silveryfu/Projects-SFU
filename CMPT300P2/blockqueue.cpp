@@ -8,11 +8,11 @@ BlockQueue::BlockQueue(){
 Proc * BlockQueue::checkIO(){
     Proc *procPtr=NULL;
     synchronized(blockQueueMutex){
-        std::list<Proc>::iterator iter;
+        list<Proc *>::iterator iter;
         for(iter=blockQueue.begin();iter!=blockQueue.end();iter++){
             if(!(*iter)->isBlocked()){
                 blockQueue.erase(iter);
-                procPtr=*iter;
+                procPtr=(*iter);
                 break;
             }
         }
