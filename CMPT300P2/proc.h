@@ -7,8 +7,8 @@ using namespace std;
 class Proc{
 public:
 
-    Proc(int p, int id);
-    Proc(int p, int id, int pt);
+    Proc(int id);
+    Proc(int id, int pt);
     ~Proc(){};
     int isBlocked();
     int getID();
