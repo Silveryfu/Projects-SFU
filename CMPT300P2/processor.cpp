@@ -5,7 +5,7 @@
 
 /* ---------------------- MASTER Processor------------------------- */
 
-MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
+MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0){
 	rq = rq0;
 	bq = bq0;
 	proc_pip = proc_pip0;
