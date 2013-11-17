@@ -20,6 +20,15 @@ Proc * BlockQueue::checkIO(){
     return procPtr;
 }
 
+std::vector<Proc *> BlockQueue::getList(){
+    std::vector<Proc *> temp;
+    list<Proc *>::iterator iter;
+    for(iter=blockQueue.begin();iter!=blockQueue.end();iter++){
+        temp.push_back(*iter);
+    }
+    return temp;
+}
+
 void BlockQueue::putProc(Proc *process){
     synchronized(blockQueueMutex){
         blockQueue.push_back(process);

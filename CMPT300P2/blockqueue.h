@@ -11,6 +11,8 @@ public:
 
     Proc * checkIO();
 
+    std::vector<Proc *> getList();
+
     void putProc(Proc *process);
 };
 #endif
