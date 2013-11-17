@@ -18,6 +18,10 @@
 #include "readyqueue.h"
 #include "blockqueue.h"
 
+#define PROC_EXIT -1;
+#define PROC_BLOCK 0;
+#define PROC_RUN 1;
+
 using namespace std;
 
 int const SLAVES_NUMBER = 3;
