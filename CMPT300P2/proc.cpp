@@ -1,7 +1,7 @@
 #include "proc.h"
 
 Proc::Proc(int id){
-    priority=0;    //priority is initialized to 0
+    priority=3;    //priority is initialized to 3
     procID=id;
     blockState=0;
     procType=1;    //normal as default
@@ -10,7 +10,7 @@ Proc::Proc(int id){
 };
 
 Proc::Proc(int id, int pt){
-    priority=0;
+    priority=3;
     procID=id;
     blockState=0;
     procType=pt;
