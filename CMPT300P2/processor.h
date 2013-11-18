@@ -45,16 +45,16 @@ private:
 };
 
 //This class wrap process and running time together, in order to pass this info to slave processor
-class ProcAndTime() {
+class ProcWrapper() {
 public:
-	ProcAndTime(Proc *pro0, int timeQuan0) {
+	ProcWrapper(Proc *pro0, int timeQuanta0) {
 		pro = pro0;
-		timeQuan = timeQuan0;
+		timeQuanta = timeQuanta0;
 	}
 	Proc *pro;
-	int timeQuan;
+	int timeQuanta;
 protected:
-	ProcAndTime(){};
+	ProcWrapper(){};
 }
 
 #endif
