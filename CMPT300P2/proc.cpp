@@ -45,17 +45,18 @@ void Proc::initialize_loc(){
     for(int i=0;i<num_of_lines;i++){
         io_odd=rand()%(procType*30+5);   //averagely, an io-bounded proc io occurs 1 out of 5, normal: 1/35, cpu-bounded: 1/65;
         if(io_odd!=0) 
-            loc.push_front(1);
-        else loc.push_front(0);
+            loc.push_front(PROC_RUN);
+        else loc.push_front(PROC_BLOCK);
     }
 }
 
 int Proc::proc_execute(){
     cout<<"This is process "<<procID<<" running."<<endl;
-    if(loc.size()==0) return -1;
+    if(loc.size()==0) return PROC_EXIT;
     else{
         int proc_state=loc.front();
         loc.pop_front();
-        return proc_state;
+        if (proc_state == 0) return PROC_BLOCK;
+        else return PROC_RUN;
     }
 }

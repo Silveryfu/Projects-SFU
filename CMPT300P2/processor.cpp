@@ -103,7 +103,7 @@ void SlaveProcessor::running() {
 		int proc_state = PROC_RUN;
 		for (int i=0; i<pw->timeQuanta; i++) {
 			proc_state = pw->pro->proc_execute();
-			if (proc_state == -1 || proc_state == 0) break;
+			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
 
 		switch(proc_state) {
