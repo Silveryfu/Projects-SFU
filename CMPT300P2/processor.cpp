@@ -57,7 +57,7 @@ void MasterProcessor::midTermScheduler() {
 	while (1) {
 		vector<Proc *> bqV = bq->getList();
 		int length = bqV.size();
-		int index = rand() % (length * IO_WAIT_TIME);
+		int index = rand() % ((length+1) * IO_WAIT_TIME);
 		if (index < length) {
 			bqV[index]->setState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
