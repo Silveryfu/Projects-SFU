@@ -115,7 +115,7 @@ void SlaveProcessor::running() {
 				cout<<"A process exits."<<endl;
 			        break;
 			default:  //use up the time quanta but not finishes
-				if ( pw->pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
+				if ( pw->pro->getPriority() < LEVEL ) pw->pro->changePriority(1);
 				else pw->pro->changePriority(0);
 				rq.putProc(pw->pro);
 			        break;
