@@ -12,18 +12,15 @@
 #include <cstdio>
 #include <ctime>
 
-#include "proc.h"
 #include "monitor.h"
-#include "processor.h"
-#include "readyqueue.h"
-#include "blockqueue.h"
-
-#define PROC_EXIT -1;
-#define PROC_BLOCK 0;
-#define PROC_RUN 1;
 
 using namespace std;
 
+#define PROC_EXIT -1
+#define PROC_BLOCK 0
+#define PROC_RUN 1
+
+int const LEVEL=3;
 int const SLAVES_NUMBER = 3;
 int const TIME_UNIT = 10;
 int const MAX_PROCESS_NUMBER = 256;

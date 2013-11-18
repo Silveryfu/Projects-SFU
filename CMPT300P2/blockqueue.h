@@ -1,6 +1,9 @@
 #ifndef BLOCKQUEUE_H
 #define BLOCKQUEUE_H
 #include "header.h"
+#include "proc.h"
+
+class Proc;
 
 class BlockQueue{
 private:

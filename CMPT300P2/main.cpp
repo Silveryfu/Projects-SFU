@@ -1,4 +1,5 @@
 #include "header.h"
+#include "processor.h"
 
 using namespace std;
 
@@ -13,11 +14,11 @@ int main() {
 	ReadyMLFQ *rq = new ReadyMLFQ();
 	BlockQueue *bq = new BlockQueue();
 
-	MasterProcessor *MsP = new MasterProcessor(*rq, *bq, proc_pip, idle_pip);
+	MasterProcessor *MsP = new MasterProcessor(rq, bq, proc_pip, idle_pip);
 
 	SlaveProcessor *SlP[SLAVES_NUMBER];
-	for (int i=0; i<SLAVES_NUMBER; i++) 
-		SlP[i] = new SlaveProcessor(*rq, *bq, proc_pip[i], idle_pip[i]); 
+	for (int i=0; i<SLAVES_NUMBER; i++)
+		SlP[i] = new SlaveProcessor(rq, bq, proc_pip[i], idle_pip[i]);
 
 	sleep(600);
 
