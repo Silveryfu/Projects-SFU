@@ -10,8 +10,8 @@ int main() {
 		pipe(proc_pip[i]);
 		pipe(idle_pip[i]);
 	}
-
 	ReadyMLFQ *rq = new ReadyMLFQ();
+	
 	BlockQueue *bq = new BlockQueue();
 
 	MasterProcessor *MsP = new MasterProcessor(rq, bq, proc_pip, idle_pip);
