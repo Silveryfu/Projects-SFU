@@ -12,7 +12,7 @@ public:
     int getID();
     int getPriority();
     int proc_execute();
-    void setBlockState(int);
+    void setBlockState(int s);
     void changePriority(int i);
 	
 protected:
