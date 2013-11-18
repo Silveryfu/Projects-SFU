@@ -35,13 +35,13 @@ void MasterProcessor::shortTermScheduler() {
 	while (1) {
 		Proc *pro;
 		pro = rq->getProc(); //Get a process from ready queue
-		if (pro != NULL) {	//If there still at least a process in ready queue   /******may busy waiting
+		if (pro != NULL) {	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
 			for (int i=0; i<SLAVES_NUMBER; i++) {
 				int idle = 0;
 				read(idle_pip[i][0], &idle, sizeof(int)); //non-block reading the idle_pipe
 				if ( idle == 1 ) {	//If the slave is idle
 					if (pw[i] != NULL) {
-						delete pw[i];
+						delete pw[i];	//In case of memory leak
 						pw[i] = NULL;
 					}
 					pw[i] = new ProcWrapper(pro, TIME_UNIT * pro->getPriority());
@@ -100,7 +100,7 @@ void SlaveProcessor::running() {
 		write(s_idle_pip[1], &idle, sizeof(int)); //Write back the idle signal to idle_pipe
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
-		int proc_state = 1;
+		int proc_state = PROC_RUN;
 		for (int i=0; i<pw->timeQuanta; i++) {
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == -1 || proc_state == 0) break;
@@ -114,7 +114,8 @@ void SlaveProcessor::running() {
 		case PROC_EXIT://Process finish executing and exit
 			cout<<"A process exits."<<endl;
 		    break;
-		default:  //use up the time quanta but not finishes
+		case PROC_RUN://use up the time quanta but not finishes
+		default:  
 			if ( pw->pro->getPriority() < LEVEL ) pw->pro->changePriority(1);
 			rq->putProc(pw->pro);
 		    break;

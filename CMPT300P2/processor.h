@@ -64,7 +64,7 @@ private:
 	int *s_idle_pip;
 };
 
-//This class wrap process and running time together, in order to pass this info to slave processor
+//This class wrap process and running time together, in order to pass those info to slave processor
 class ProcWrapper{
 public:
 	ProcWrapper(Proc *pro0, int timeQuanta0) {
