@@ -3,7 +3,7 @@
 Proc::Proc(int id){
     priority=1;    //priority is initialized to 3
     procID=id;
-    blockState=0;
+    state=PROC_RUN;
     procType=1;    //normal as default
     /*generate the simulation of a process and IOs*/
     initialize_loc();
@@ -12,14 +12,18 @@ Proc::Proc(int id){
 Proc::Proc(int id, int pt){
     priority=1;
     procID=id;
-    blockState=0;
+    state=PROC_RUN;
     procType=pt;
     /*generate the simulation of a process and IOs*/
     initialize_loc();
 };
 
-int Proc::isBlocked(){
-    return blockState;
+bool Proc::isBlocked(){
+    return state == PROC_BLOCK;
+}
+
+bool Proc::isRunning() {
+    return state == PROC_RUN;
 }
 
 int Proc::getID(){
@@ -30,8 +34,8 @@ int Proc::getPriority(){
     return priority;
 }
 
-void Proc::setBlockState(int s) {
-    blockState = s;
+void Proc::setState(int s) {
+    state = s;
 }
 
 void Proc::changePriority(int i){
@@ -56,7 +60,6 @@ int Proc::proc_execute(){
     else{
         int proc_state=loc.front();
         loc.pop_front();
-        if (proc_state == 0) return PROC_BLOCK;
-        else return PROC_RUN;
+        return proc_state;
     }
 }

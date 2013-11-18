@@ -59,7 +59,7 @@ void MasterProcessor::midTermScheduler() {
 		int length = bqV.size();
 		int index = rand() % (length * IO_WAIT_TIME);
 		if (index < length) {
-			bqV[index]->setBlockState(0);
+			bqV[index]->setBlockState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) rq->putProc(pro);
 		}
@@ -68,13 +68,19 @@ void MasterProcessor::midTermScheduler() {
 
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
-	int proc_id=1;
 	while (1) {
 		sleep(1.0/CREATE_PROC_FREQUENCY);
+		int proc_id=-1;
+		for (int i; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
+			if (!(it*)->isRunning) {
+				delete *it;
+				proc_id = i;
+			}
+		}
+		if (proc_id == -1) proc_id = (int)all_processes.size();
 		Proc *pro = new Proc(proc_id);
 		all_processes.push_back(pro);
 		rq->putProc(pro);
-		proc_id++;
 		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while
 			sleep(10);
 		}
@@ -108,11 +114,12 @@ void SlaveProcessor::running() {
 
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
-			pw->pro->setBlockState(1);
+			pw->pro->setState(PROC_BLOCK);
 			bq->putProc(pw->pro);
 		    break;
 		case PROC_EXIT://Process finish executing and exit
 			cout<<"A process exits."<<endl;
+			pw->pro->setState(PROC_EXIT);
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
