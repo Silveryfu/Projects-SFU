@@ -71,17 +71,27 @@ void MasterProcessor::longTermScheduler() {
 	while (1) {
 		sleep(1.0/CREATE_PROC_FREQUENCY);
 		int proc_id=-1;
-		for (int i; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
-			if (!(it*)->isRunning) {
-				delete *it;
+		for (int i=0; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
+			if (!all_processes[i]->isRunning()) {
+				delete all_processes[i];
 				proc_id = i;
 			}
 		}
-		if (proc_id == -1) proc_id = (int)all_processes.size();
-		Proc *pro = new Proc(proc_id);
-		all_processes.push_back(pro);
+
+		Proc *pro;
+		if (proc_id == -1) { //If no previous process exited
+			proc_id = (int)all_processes.size();
+			pro = new Proc(proc_id);
+			all_processes.push_back(pro);
+			
+		}
+		else {
+			pro = new Proc(proc_id);
+			all_processes[i] = pro;
+		}
+		
 		rq->putProc(pro);
-		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while
+		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
 			sleep(10);
 		}
 	}
