@@ -75,7 +75,7 @@ void MasterProcessor::longTermScheduler() {
 		all_processes.push_back(pro);
 		rq->putProc(pro);
 		proc_id++;
-		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while, and cut the i to its half
+		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while
 			sleep(10);
 		}
 	}
@@ -115,7 +115,7 @@ void SlaveProcessor::running() {
 			cout<<"A process exits."<<endl;
 		    break;
 		default:  //use up the time quanta but not finishes
-			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
+			if ( pw->pro->getPriority() < LEVEL ) pw->pro->changePriority(1);
 			rq->putProc(pw->pro);
 		    break;
 		}
