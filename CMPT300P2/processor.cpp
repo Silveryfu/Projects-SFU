@@ -3,7 +3,7 @@
 /*This file consists of both master processor's and slave processor's
  *definition.*/
 
-/* ---------------------- MASTER Processor------------------------- */
+/* ---------------------- MASTER PROCESSOR------------------------- */
 
 MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0){
 	rq = rq0;
@@ -25,11 +25,11 @@ MasterProcessor::MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip
 
 void MasterProcessor::shortTerm() {
 	//This array is to store the wrap object from class ProcAndTime for each slave processor
-	ProcAndTime * pats[SLAVES_NUMBER];
+	ProcWrapper * pw[SLAVES_NUMBER];
 	for (int i=0; i<SLAVES_NUMBER; i++) {
 		//Setting non block for reading the idle_pipe
 		if ( fcntl(idle_pip[0], F_SETFL, O_NONBLOCK) == -1) printf("non block fail on slave %d\n");
-		pats[i] = NULL;
+		pw[i] = NULL;
 	}
 
 	while (1) {
@@ -40,12 +40,12 @@ void MasterProcessor::shortTerm() {
 				int idle = 0;
 				read(idle_pip[i][0], &idle, sizeof(int)); //non-block reading the idle_pipe
 				if ( idle == 1 ) {	//If the slave is idle
-					if (pat[i] != NULL) {
-						delete pat[i];
-						pat[i] = NULL;
+					if (pw[i] != NULL) {
+						delete pw[i];
+						pw[i] = NULL;
 					}
-					pat[i] = new ProcAndTime(pro, TIME_UNIT * pro->getPriority());
-					write(proc_pip[i][1], &pats[i], sizeof(ProcAndTime *));
+					pw[i] = new ProcWrapper(pro, TIME_UNIT * pro->getPriority());
+					write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
 				}
 			}
 		}
@@ -68,20 +68,20 @@ void MasterProcessor::midTerm() {
 
 void MasterProcessor::longTerm() {
 	srand(time(NULL));
-	int i=1;
+	int proc_id=1;
 	while (1) {
 		sleep(1.0/CREATE_PROC_FREQUENCY);
-		Proc *pro = new Proc(i);
+		Proc *pro = new Proc(proc_id);
 		all_processes.push_back(pro);
 		rq.putProc(pro);
-		if (i > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while, and cut the i to its half
+		proc_id++;
+		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too much processes, sleep for a while, and cut the i to its half
 			sleep(10);
-			i /= 2;
 		} 
 	}
 }
 
-/* -------------------- SLAVES ---------------------- */
+/* -------------------- SLAVE PROCESSOR ---------------------- */
 
 SlaveProcessor::SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *s_proc_pip0, int *s_idle_pip0) {
 	rq = rq0;
@@ -95,29 +95,29 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int *s_proc_pip0
 
 void SlaveProcessor::running() {
 	while (1) {
-		ProcAndTime *pat;
+		ProcWrapper *pw;
 		int const idle = 1;
 		write(s_idle_pip[1], &idle, sizeof(int)); //Write back the idle signal to idle_pipe
-		read(s_proc_pip[0], &pat, sizeof(ProcAndTime *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
+		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
-		int io_or_not_io = 1;
-		for (int i=0; i<pat->timeQuan; i++) {
-			io_or_not_io = pat->proc_execute();
-			if (io_or_not_io == -1 || io_or_not_io == 0) break;
+		int proc_state = PROC_RUN;
+		for (int i=0; i<pw->timeQuanta; i++) {
+			proc_state = pw->proc_execute();
+			if (proc_state == PROC_EXIT || proc_state == PROC_BLOCK) break;
 		}
 
-		switch(io_or_not_io) {
-			case 0: //Process IO Block
-				pat->pro->setBlockState(1);
-				bq.putProc(pat->pro);
+		switch(proc_state) {
+			case PROC_BLOCK: //Process IO Block
+				pw->pro->setBlockState(1);
+				bq.putProc(pw->pro);
 			        break;
-			case -1://Process finish executing and exit
-				cout<<"a process finishes."<<endl;
+			case PROC_EXIT://Process finish executing and exit
+				cout<<"A process exits."<<endl;
 			        break;
-			default:
-				if ( pat->pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
-				else pat->pro->changePriority(0);
-				rq.putProc(pat->pro);
+			default:  //use up the time quanta but not finishes
+				if ( pw->pro->getPriority() < LEVEL ) pat->pro->changePriority(1);
+				else pw->pro->changePriority(0);
+				rq.putProc(pw->pro);
 			        break;
 			}
 }
