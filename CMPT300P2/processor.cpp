@@ -75,6 +75,7 @@ void MasterProcessor::longTermScheduler() {
 			if (!all_processes[i]->isRunning()) {
 				delete all_processes[i];
 				proc_id = i;
+				break;
 			}
 		}
 
@@ -84,7 +85,7 @@ void MasterProcessor::longTermScheduler() {
 			pro = new Proc(proc_id);
 			all_processes.push_back(pro);
 		}
-		else {
+		else { //When there is a previous process exited, make the new process
 			pro = new Proc(proc_id);
 			all_processes[i] = pro;
 		}
