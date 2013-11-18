@@ -5,7 +5,7 @@
 class BlockQueue{
 private:
     pthread_mutex_t blockQueueMutex;
-    list<Proc *> blockQueue;
+    std::list<Proc *> blockQueue;
 public:
     BlockQueue();
 

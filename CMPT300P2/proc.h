@@ -23,7 +23,7 @@ private:
     int procID;
     int procType; //cpu-bounded as 2, normal as 1, io-bounded as 0
     int blockState;
-    list<int> loc;   //"lines of codes"
+    std::list<int> loc;   //"lines of codes"
 
     void initialize_loc();
 };

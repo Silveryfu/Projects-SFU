@@ -3,11 +3,14 @@
 
 #include "header.h"
 
+class ReadyMLFQ;
+class BlockQueue;
+
 class MasterProcessor {
 public:
 	MasterProcessor(ReadyMLFQ &rq0, BlockQueue &bq0, int **proc_pip0, int **idle_pip0);
 	~MasterProcessor() {
-		for (vector::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
+		for (std::vector<Proc *>::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
 			if (*it != NULL) delete *it;
 		}
 	}
@@ -24,7 +27,7 @@ private:
 	BlockQueue &bq;
 	int **proc_pip;
 	int **idle_pip;
-	vector<Proc *> all_processes; //Store all the processes created from long-term scheduler
+	std::vector<Proc *> all_processes; //Store all the processes created from long-term scheduler
 };
 
 
@@ -45,7 +48,7 @@ private:
 };
 
 //This class wrap process and running time together, in order to pass this info to slave processor
-class ProcWrapper() {
+class ProcWrapper{
 public:
 	ProcWrapper(Proc *pro0, int timeQuanta0) {
 		pro = pro0;
@@ -55,6 +58,6 @@ public:
 	int timeQuanta;
 protected:
 	ProcWrapper(){};
-}
+};
 
 #endif
