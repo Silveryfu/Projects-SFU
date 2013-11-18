@@ -11,14 +11,11 @@
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
-
 #include "monitor.h"
-#include "processor.h"
-#include "blockqueue.h"
-#include "readyqueue.h"
-#include "proc.h"
 
 using namespace std;
+
+
 
 #define PROC_EXIT -1
 #define PROC_BLOCK 0

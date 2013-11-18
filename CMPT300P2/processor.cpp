@@ -38,7 +38,7 @@ void MasterProcessor::shortTermScheduler() {
 		if (pro != NULL) {	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
 			for (int i=0; i<SLAVES_NUMBER; i++) {
 				bool isIdle = false;
-				read(idle_pip[i][0], &idle, sizeof(bool)); //non-block reading the idle_pipe
+				read(idle_pip[i][0], &isIdle, sizeof(bool)); //non-block reading the idle_pipe
 				if ( isIdle ) {	//If the slave is idle
 					if (pw[i] != NULL) {
 						delete pw[i];	//In case of memory leak
@@ -59,7 +59,7 @@ void MasterProcessor::midTermScheduler() {
 		int length = bqV.size();
 		int index = rand() % (length * IO_WAIT_TIME);
 		if (index < length) {
-			bqV[index]->setBlockState(PROC_RUN); //IO blocking ends
+			bqV[index]->setState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) rq->putProc(pro);
 		}
@@ -87,7 +87,7 @@ void MasterProcessor::longTermScheduler() {
 		}
 		else { //When there is a previous process exited, put the new process at the old one's spot
 			pro = new Proc(proc_id);
-			all_processes[i] = pro;
+			all_processes[proc_id] = pro;
 		}
 		
 		rq->putProc(pro);
