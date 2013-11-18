@@ -13,6 +13,10 @@
 #include <ctime>
 
 #include "monitor.h"
+#include "processor.h"
+#include "blockqueue.h"
+#include "readyqueue.h"
+#include "proc.h"
 
 using namespace std;
 
