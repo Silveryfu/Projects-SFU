@@ -85,7 +85,7 @@ void MasterProcessor::longTermScheduler() {
 			pro = new Proc(proc_id);
 			all_processes.push_back(pro);
 		}
-		else { //When there is a previous process exited, make the new process
+		else { //When there is a previous process exited, put the new process at the old one's spot
 			pro = new Proc(proc_id);
 			all_processes[i] = pro;
 		}
