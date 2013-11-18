@@ -55,7 +55,6 @@ void Proc::initialize_loc(){
 }
 
 int Proc::proc_execute(){
-    cout<<"This is process "<<procID<<" running."<<endl;
     if(loc.size()==0) return PROC_EXIT;
     else{
         int proc_state=loc.front();

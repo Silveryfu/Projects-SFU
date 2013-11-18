@@ -47,7 +47,7 @@ private:
 
 class SlaveProcessor {
 public:
-	SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *proc_pip0, int *idle_pip0);
+	SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *proc_pip0, int *idle_pip0, int slaveID0);
 	static void *run(void *self){
         ((SlaveProcessor*)self)->running();
         return NULL;
@@ -62,6 +62,7 @@ private:
 	BlockQueue *bq;
 	int *s_proc_pip;
 	int *s_idle_pip;
+	int slaveID;
 };
 
 //This class wrap process and running time together, in order to pass those info to slave processor
