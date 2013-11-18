@@ -37,9 +37,9 @@ void MasterProcessor::shortTermScheduler() {
 		pro = rq->getProc(); //Get a process from ready queue
 		if (pro != NULL) {	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
 			for (int i=0; i<SLAVES_NUMBER; i++) {
-				int idle = 0;
-				read(idle_pip[i][0], &idle, sizeof(int)); //non-block reading the idle_pipe
-				if ( idle == 1 ) {	//If the slave is idle
+				bool isIdle = false;
+				read(idle_pip[i][0], &idle, sizeof(bool)); //non-block reading the idle_pipe
+				if ( isIdle ) {	//If the slave is idle
 					if (pw[i] != NULL) {
 						delete pw[i];	//In case of memory leak
 						pw[i] = NULL;
@@ -96,8 +96,8 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0
 void SlaveProcessor::running() {
 	while (1) {
 		ProcWrapper *pw;
-		int const idle = 1;
-		write(s_idle_pip[1], &idle, sizeof(int)); //Write back the idle signal to idle_pipe
+		bool const isIdle = true;
+		write(s_idle_pip[1], &isIdle, sizeof(bool)); //Write back the idle signal to idle_pipe
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
 		int proc_state = PROC_RUN;
