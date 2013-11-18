@@ -83,7 +83,6 @@ void MasterProcessor::longTermScheduler() {
 			proc_id = (int)all_processes.size();
 			pro = new Proc(proc_id);
 			all_processes.push_back(pro);
-			
 		}
 		else {
 			pro = new Proc(proc_id);
