@@ -88,7 +88,7 @@ void MasterProcessor::longTermScheduler() {
 			}
 		}
 
-		if((int)all_processes.size()==MAX_PROCESS_NUMBER) continue;
+		if(IDSpace.size()==0) continue;
 		
 		/*create new process*/
 		Proc *pro;
