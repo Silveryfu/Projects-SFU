@@ -87,7 +87,7 @@ void MasterProcessor::longTermScheduler() {
 		Proc *pro;
 		if (proc_id == -1) { //If no previous process exited
 			proc_id = (int)all_processes.size();
-			if (proc_id > MAX_PROCESS_NUMBER) continue;
+			//if (proc_id > MAX_PROCESS_NUMBER) continue;
 			pro = new Proc(proc_id);
 			all_processes.push_back(pro);
 		}
@@ -100,7 +100,7 @@ void MasterProcessor::longTermScheduler() {
 		rq->putProc(pro);
 
 		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
-			sleep(10);
+			sleep(5);
 		}
 	}
 }
@@ -127,24 +127,24 @@ void SlaveProcessor::running() {
 
 		int proc_state = PROC_RUN;
 		for (int i=0; i<pw->timeQuanta; i++) {
-			printf("Process %d is running on processor # %d\n", pw->pro->getID(), slaveID);
+			printf("processor # %d: Process %d is running\n",slaveID, pw->pro->getID());
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
 
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
-			printf("Process %d is IO-Block on processor # %d\n", pw->pro->getID(), slaveID);
+			printf("processor # %d: Process %d IO-Block\n",slaveID, pw->pro->getID());
 			pw->pro->setState(PROC_BLOCK);
 			bq->putProc(pw->pro);
 		    break;
 		case PROC_EXIT://Process finish executing and exit
-			printf("Process %d exits on processor # %d\n", pw->pro->getID(), slaveID);
+			printf("processor # %d: Process %d exits\n",slaveID, pw->pro->getID());
 			pw->pro->setState(PROC_EXIT);
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("Process %d swapped out on processor # %d\n", pw->pro->getID(), slaveID);
+			printf("processor # %d: Process %d swapped out\n",slaveID, pw->pro->getID());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			rq->putProc(pw->pro);
 		    break;
