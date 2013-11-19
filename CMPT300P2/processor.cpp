@@ -39,6 +39,7 @@ void MasterProcessor::shortTermScheduler() {
 	}
 
 	while (1) {
+		//sleep(TIME_SLOW_SPEED);
 		for (int i=0; i<SLAVES_NUMBER; i++) {
 			bool isIdle = false;
 
@@ -64,6 +65,7 @@ void MasterProcessor::shortTermScheduler() {
 void MasterProcessor::midTermScheduler() {
 	srand(time(NULL));
 	while (1) {
+		//sleep(TIME_SLOW_SPEED);
 		vector<Proc *> bqV = bq->getList();
 		int length = bqV.size();
 		int index = rand() % ((length+1) * IO_WAIT_TIME);
@@ -81,11 +83,12 @@ void MasterProcessor::midTermScheduler() {
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
-		for (int i=0; i < (int)all_processes.size(); i++) {
-			if (all_processes[i] != NULL && !all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
-				IDSpace.push(all_processes[i]->getID());
-				delete all_processes[i];
-				all_processes[i] = NULL;
+		//sleep(TIME_SLOW_SPEED);
+		for (vector<Proc *>::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
+			if ( (*it) != NULL && (!(*it)->isRunning()) ) { 	//isRunning() is read-only*, no IPC issue concerned
+				IDSpace.push((*it)->getID());
+				delete (*it);
+				(*it) = NULL;
 			}
 		}
 
@@ -120,6 +123,7 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0
 
 void SlaveProcessor::running() {
 	while (1) {
+		//sleep(TIME_SLOW_SPEED);
 		ProcWrapper *pw;
 		bool const isIdle = true;
 		write(s_idle_pip[1], &isIdle, sizeof(bool)); //Write back the idle signal to idle_pipe
