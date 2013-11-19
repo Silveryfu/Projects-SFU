@@ -14,7 +14,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 		IDSpace.pop();
 	}
 	for(int i=0;i<MAX_PROCESS_NUMBER;i++){
-		IDSpace.push(i+1);   //initialize the id space
+		IDSpace.push(i);   //initialize the id space
 	}
 
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
@@ -73,8 +73,7 @@ void MasterProcessor::midTermScheduler() {
 			bqV[index]->setState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) {
-				rq->putProc(pro);
-				printf("Process %d IO-Block ends\n", pro->getID());
+				rq->putProc(pro);				printf("Process %d IO-Block ends\n", pro->getID());
 			}
 		}
 	}
@@ -83,12 +82,11 @@ void MasterProcessor::midTermScheduler() {
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
-		//sleep(TIME_SLOW_SPEED);
-		for (vector<Proc *>::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
-			if ( (*it) != NULL && (!(*it)->isRunning()) ) { 	//isRunning() is read-only*, no IPC issue concerned
-				IDSpace.push((*it)->getID());
-				delete (*it);
-				(*it) = NULL;
+		for (int i=0; i < (int)all_processes.size(); i++) {
+			if (all_processes[i]!=NULL&&!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
+				IDSpace.push(all_processes[i]->getID());
+				delete all_processes[i];
+				all_processes[i]=NULL;
 			}
 		}
 
