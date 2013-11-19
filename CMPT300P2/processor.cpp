@@ -14,7 +14,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 		IDSpace.pop();
 	}
 	for(int i=0;i<MAX_PROCESS_NUMBER;i++){
-		IDSpace.push(i+1);   //initialize the id space
+		IDSpace.push(i);   //initialize the id space
 	}
 
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
@@ -82,9 +82,10 @@ void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
 		for (int i=0; i < (int)all_processes.size(); i++) {
-			if (!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
+			if (all_processes[i]!=NULL&&!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
 				delete all_processes[i];
 				IDSpace.push(i);
+				all_processes[i]=NULL;
 			}
 		}
 
