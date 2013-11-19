@@ -1,5 +1,7 @@
 #include "readyqueue.h"
 
+pthread_cond_t condc,condp;
+
 ReadyMLFQ::ReadyMLFQ(){
     pthread_mutex_init(&readyMLFQMutex,NULL);
     for(int i=0;i<LEVEL;i++){
@@ -12,14 +14,16 @@ ReadyMLFQ::ReadyMLFQ(){
 void ReadyMLFQ::putProc(Proc *process){
     synchronized(readyMLFQMutex){
         readMLFQ[process->getPriority()-1].push(process);
-    }
+		if(totalSize()==1) pthread_cond_signal(&condc);
+	}
 }
 
 Proc * ReadyMLFQ::getProc(){
-    Proc *procPtr=NULL;
+	Proc *procPtr=NULL;
     synchronized(readyMLFQMutex){
-        for(int i=0;i<LEVEL;i++){
-            if(!readMLFQ[i].empty()){
+		for(int i=0;i<LEVEL;i++){
+            while(totalSize()==0) pthread_cond_wait(&condc, &readyMLFQMutex);
+			if(!readMLFQ[i].empty()){
                 procPtr=readMLFQ[i].front();
                 readMLFQ[i].pop();
                 break;
@@ -29,14 +33,13 @@ Proc * ReadyMLFQ::getProc(){
     return procPtr;
 }
 
-int ReadyMLFQ::isEmpty(){
+
+int ReadyMLFQ::totalSize(){
     int sum=0;
-    synchronized(readyMLFQMutex){
-        for(int i=0;i<LEVEL;i++){
-            sum+=readMLFQ[i].size();
-        }
+    for(int i=0;i<LEVEL;i++){
+        sum+=readMLFQ[i].size();
     }
-    return sum==0;
+    return sum;
 }
 
 ReadyMLFQ::~ReadyMLFQ(){

@@ -31,4 +31,5 @@ private:
 	pthread_mutex_t &m_mutex;
         bool m_locked;
 };
+
 #endif

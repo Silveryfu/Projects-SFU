@@ -14,7 +14,7 @@ public:
 
     Proc * getProc();
 
-    int isEmpty();
+    int totalSize();
 
     ~ReadyMLFQ();
 };
