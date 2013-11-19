@@ -12,8 +12,8 @@ class MasterProcessor {
 public:
 	MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[][2], int idle_pip0[][2]);
 	~MasterProcessor() {
-		for (std::vector<Proc *>::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
-			if (*it != NULL) delete *it;
+		for (std::list<Proc *>::iterator it=all_processes.begin(); it != all_processes.end(); it++) {
+			delete *it;
 		}
 	}
 	static void *runShortTermScheduler(void *self){
@@ -36,13 +36,13 @@ private:
 	void shortTermScheduler();
 	void midTermScheduler();
 	void longTermScheduler();
-	std::queue<int> IDSpace;
 	pthread_t pt[3];
 	ReadyMLFQ *rq;
 	BlockQueue *bq;
 	int (*proc_pip)[2];
 	int (*idle_pip)[2];
-	std::vector<Proc *> all_processes; //Store all the processes created from long-term scheduler
+	std::queue<int> IDSpace;
+	std::list<Proc *> all_processes; //Store all the processes created from long-term scheduler
 };
 
 

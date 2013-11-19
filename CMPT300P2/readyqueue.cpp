@@ -22,7 +22,7 @@ void ReadyMLFQ::putProc(Proc *process){
 Proc * ReadyMLFQ::getProc(){
 	Proc *procPtr=NULL;
     synchronized(readyMLFQMutex){
-		for(int i=0;i<LEVEL;i++){
+		for(int i=LEVEL-1;i>=0;i--) {
             while(totalSize()==0) pthread_cond_wait(&condc, &readyMLFQMutex);
 			if(!readMLFQ[i].empty()){
                 procPtr=readMLFQ[i].front();
