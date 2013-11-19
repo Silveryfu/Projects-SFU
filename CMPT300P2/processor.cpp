@@ -82,9 +82,10 @@ void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
 		for (int i=0; i < (int)all_processes.size(); i++) {
-			if (!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
+			if (all_processes[i] != NULL && !all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
+				IDSpace.push(all_processes[i]->getID());
 				delete all_processes[i];
-				IDSpace.push(i);
+				all_processes[i] = NULL;
 			}
 		}
 
