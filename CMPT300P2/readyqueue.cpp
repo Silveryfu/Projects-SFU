@@ -16,13 +16,17 @@ void ReadyMLFQ::putProc(Proc *process){
 }
 
 Proc * ReadyMLFQ::getProc(){
-    Proc *procPtr=NULL;
-    synchronized(readyMLFQMutex){
-        for(int i=0;i<LEVEL;i++){
-            if(!readMLFQ[i].empty()){
-                procPtr=readMLFQ[i].front();
-                readMLFQ[i].pop();
-                break;
+    Proc *procPtr;
+    bool notFound = true;
+    while (notFound) {
+        synchronized(readyMLFQMutex){
+            for(int i=0;i<LEVEL;i++){
+                if(!readMLFQ[i].empty()){
+                    procPtr=readMLFQ[i].front();
+                    readMLFQ[i].pop();
+                    notFound = false;
+                    break;
+                }
             }
         }
     }

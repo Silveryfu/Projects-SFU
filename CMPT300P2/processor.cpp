@@ -34,11 +34,14 @@ void MasterProcessor::shortTermScheduler() {
 	while (1) {
 		for (int i=0; i<SLAVES_NUMBER; i++) {
 			bool isIdle = false;
+
+			Proc *pro;
+			pro = rq->getProc(); //Get a process from ready queue
+			//if (pro == NULL) break;	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
+
 			read(idle_pip[i][0], &isIdle, sizeof(bool)); //non-block reading the idle_pipe
+			
 			if ( isIdle ) {	//If the slave is idle
-				Proc *pro;
-				pro = rq->getProc(); //Get a process from ready queue
-				if (pro == NULL) break;	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
 				if (pw[i] != NULL) {
 					delete pw[i];	//In case of memory leak
 					pw[i] = NULL;
@@ -47,6 +50,7 @@ void MasterProcessor::shortTermScheduler() {
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
 				printf("Process %d with %d time quanta is passed to processor # %d\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
+
 		}
 	}
 }
@@ -74,7 +78,7 @@ void MasterProcessor::longTermScheduler() {
 		sleep(1.0/CREATE_PROC_FREQUENCY);
 		int proc_id=-1;
 		for (int i=0; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
-			if (!all_processes[i]->isRunning()) { //Because state is read-only here
+			if (!all_processes[i]->isRunning()) { //isRunning() is read-only
 				delete all_processes[i];
 				proc_id = i;
 				break;
@@ -84,7 +88,7 @@ void MasterProcessor::longTermScheduler() {
 		Proc *pro;
 		if (proc_id == -1) { //If no previous process exited
 			proc_id = (int)all_processes.size();
-			//if (proc_id > MAX_PROCESS_NUMBER) continue;
+			if (proc_id > MAX_PROCESS_NUMBER) continue;
 			pro = new Proc(proc_id);
 			all_processes.push_back(pro);
 		}
@@ -95,7 +99,7 @@ void MasterProcessor::longTermScheduler() {
 		
 		printf("Process %d is created\n", pro->getID()); //getID() is read-only
 		rq->putProc(pro);
-		
+
 		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
 			sleep(10);
 		}
@@ -117,10 +121,13 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0
 
 void SlaveProcessor::running() {
 	while (1) {
+		printf("slave processor # %d running !!!!!!\n", slaveID);
 		ProcWrapper *pw;
 		bool const isIdle = true;
 		write(s_idle_pip[1], &isIdle, sizeof(bool)); //Write back the idle signal to idle_pipe
+		printf("slave processor # %d running, after idle\n", slaveID);
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
+		printf("slave processor # %d running, read proc wrapper\n", slaveID);
 
 		int proc_state = PROC_RUN;
 		for (int i=0; i<pw->timeQuanta; i++) {
