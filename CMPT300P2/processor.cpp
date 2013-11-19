@@ -14,7 +14,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 		IDSpace.pop();
 	}
 	for(int i=0;i<MAX_PROCESS_NUMBER;i++){
-		IDSpace.push(i);   //initialize the id space
+		all_processes.push_back(NULL);
 	}
 
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
@@ -26,7 +26,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
    	if(pthread_create(&pt[2], NULL, &runLongTermScheduler, (void*)this)) {  //Create long-term scheduler as a thread
    	    printf("Could not create longTerm on MasterProcessor\n");
    	}
-	all_processes.clear();
+
 }
 
 void MasterProcessor::shortTermScheduler() {
@@ -39,7 +39,6 @@ void MasterProcessor::shortTermScheduler() {
 	}
 
 	while (1) {
-		//sleep(TIME_SLOW_SPEED);
 		for (int i=0; i<SLAVES_NUMBER; i++) {
 			bool isIdle = false;
 
@@ -65,7 +64,6 @@ void MasterProcessor::shortTermScheduler() {
 void MasterProcessor::midTermScheduler() {
 	srand(time(NULL));
 	while (1) {
-		//sleep(TIME_SLOW_SPEED);
 		vector<Proc *> bqV = bq->getList();
 		int length = bqV.size();
 		int index = rand() % ((length+1) * IO_WAIT_TIME);
@@ -82,23 +80,27 @@ void MasterProcessor::midTermScheduler() {
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
+		int avtive_process_num = 0;
+		std::queue<int> temp_idSpace;
 		for (int i=0; i < (int)all_processes.size(); i++) {
-			if (all_processes[i]!=NULL&&!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
+			if (all_processes[i] != NULL && !all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
 				delete all_processes[i];
-				IDSpace.push(i);
-				all_processes[i]=NULL;
+				all_processes[i] = NULL;
 			}
+			if (all_processes[i] == NULL) temp_idSpace.push(i);
+			else avtive_process_num++;
 		}
+		IDSpace = temp_idSpace;
 
-		if((int)all_processes.size()==MAX_PROCESS_NUMBER) continue;
+		if(avtive_process_num == MAX_PROCESS_NUMBER) continue;
 		
 		/*create new process*/
 		Proc *pro;
 		int proc_id=IDSpace.front();
 		IDSpace.pop();
 		pro = new Proc(proc_id);
-		all_processes.push_back(pro);
-		
+		all_processes[proc_id] = pro;
+
 		printf("Process %d is created\n", pro->getID()); //getID() is read-only*
 		rq->putProc(pro);
 
@@ -121,11 +123,12 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0
 
 void SlaveProcessor::running() {
 	while (1) {
-		//sleep(TIME_SLOW_SPEED);
 		ProcWrapper *pw;
 		bool const isIdle = true;
 		write(s_idle_pip[1], &isIdle, sizeof(bool)); //Write back the idle signal to idle_pipe
+		printf("Slave %d, before reading proc_pip\n", slaveID);
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
+		printf("Slave %d, after reading proc_pip\n", slaveID);
 
 		int proc_state = PROC_RUN;
 		for (int i=0; i<pw->timeQuanta; i++) {
