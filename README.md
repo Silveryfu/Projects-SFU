@@ -3,7 +3,7 @@ Projects-SFU
 
 A shared repo for SFU works. Louis, Torres and Silvery.
 
-1.费舍尔还真敢投，还真不进，嘿嘿
+1.Louis还真敢改，还真不对，嘿嘿
 
 2.哎呦，这程序要玩，这个这个，编得还真耐心，你看他还真合理，就是不着急
 
