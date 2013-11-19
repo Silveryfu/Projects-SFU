@@ -71,8 +71,7 @@ void MasterProcessor::midTermScheduler() {
 			bqV[index]->setState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) {
-				rq->putProc(pro);
-				printf("Process %d IO-Block ends\n", pro->getID());
+				rq->putProc(pro);				printf("Process %d IO-Block ends\n", pro->getID());
 			}
 		}
 	}
