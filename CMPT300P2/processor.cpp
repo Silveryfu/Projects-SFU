@@ -126,8 +126,8 @@ void SlaveProcessor::running() {
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
 		int proc_state = PROC_RUN;
+		printf("processor # %d: Process %d start running\n",slaveID, pw->pro->getID());
 		for (int i=0; i<pw->timeQuanta; i++) {
-			printf("processor # %d: Process %d is running\n",slaveID, pw->pro->getID());
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
