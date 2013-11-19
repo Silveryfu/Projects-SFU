@@ -1,7 +1,7 @@
 #include "proc.h"
 
 Proc::Proc(int id){
-    priority=1;    //priority is initialized to 1
+    priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
     state=PROC_RUN;
     procType=1;    //normal as default
@@ -10,7 +10,7 @@ Proc::Proc(int id){
 };
 
 Proc::Proc(int id, int pt){
-    priority=1;
+    priority=LEVEL;
     procID=id;
     state=PROC_RUN;
     procType=pt;
@@ -23,7 +23,7 @@ bool Proc::isBlocked(){
 }
 
 bool Proc::isRunning() {
-    return state == PROC_RUN;
+    return state != PROC_EXIT;
 }
 
 int Proc::getID(){
@@ -44,7 +44,7 @@ void Proc::changePriority(int i){
 
 void Proc::initialize_loc(){
     srand(time(NULL));
-    int num_of_lines=10+rand()%100;   //a process will have 10 to 110 lines of code
+    int num_of_lines=5+rand()%5;   //a process will have 10 to 110 lines of code
     int io_odd;  //probablity of a io occurence
     for(int i=0;i<num_of_lines;i++){
         io_odd=rand()%(procType*30+5);   //averagely, an io-bounded proc io occurs 1 out of 5, normal: 1/35, cpu-bounded: 1/65;
@@ -55,7 +55,6 @@ void Proc::initialize_loc(){
 }
 
 int Proc::proc_execute(){
-    cout<<"This is process "<<procID<<" running."<<endl;
     if(loc.size()==0) return PROC_EXIT;
     else{
         int proc_state=loc.front();
