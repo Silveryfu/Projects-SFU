@@ -36,8 +36,7 @@ void MasterProcessor::shortTermScheduler() {
 			bool isIdle = false;
 
 			Proc *pro;
-			pro = rq->getProc(); //Get a process from ready queue, may busy waiting!!!
-			//if (pro == NULL) break;	//If there still at least a process in ready queue   /******may busy waiting /******Is there a better way?
+			pro = rq->getProc(); //Get a process from ready queue, will block if there is no process in ready queue
 
 			read(idle_pip[i][0], &isIdle, sizeof(bool)); //non-block reading the idle_pipe
 			
