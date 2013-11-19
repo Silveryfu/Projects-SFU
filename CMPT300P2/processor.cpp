@@ -10,9 +10,11 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 	bq = bq0;
 	proc_pip = proc_pip0;
 	idle_pip = idle_pip0;
+	while(!IDSpace.empty()){
+		IDSpace.pop();
+	}
 	for(int i=0;i<MAX_PROCESS_NUMBER;i++){
 		IDSpace.push(i+1);   //initialize the id space
-
 	}
 
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
