@@ -97,7 +97,7 @@ void MasterProcessor::longTermScheduler() {
 		rq->putProc(pro);
 		
 		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
-			sleeo(10);
+			sleep(10);
 		}
 	}
 }
