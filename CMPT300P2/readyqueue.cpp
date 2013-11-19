@@ -4,6 +4,7 @@ pthread_cond_t condc,condp;
 
 ReadyMLFQ::ReadyMLFQ(){
     pthread_mutex_init(&readyMLFQMutex,NULL);
+    pthread_cond_init(&condc, NULL);
     for(int i=0;i<LEVEL;i++){
         while(!readMLFQ[i].empty()){
         readMLFQ[i].pop();
@@ -44,5 +45,6 @@ int ReadyMLFQ::totalSize(){
 
 ReadyMLFQ::~ReadyMLFQ(){
     pthread_mutex_destroy(&readyMLFQMutex);
+    pthread_cond_destroy(&condc);	
 }
 
