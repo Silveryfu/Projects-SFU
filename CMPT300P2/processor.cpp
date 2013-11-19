@@ -10,6 +10,11 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 	bq = bq0;
 	proc_pip = proc_pip0;
 	idle_pip = idle_pip0;
+	while(!IDSpace.empty()){
+		IDSpace.pop();
+	}
+	for (int i=0; i<MAX_PROCESS_NUMBER; i++) IDSpace.push(i+1);
+
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
    	    printf("Could not create shortTerm on MasterProcessor\n");
    	}
@@ -19,7 +24,7 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
    	if(pthread_create(&pt[2], NULL, &runLongTermScheduler, (void*)this)) {  //Create long-term scheduler as a thread
    	    printf("Could not create longTerm on MasterProcessor\n");
    	}
-	all_processes.clear();
+
 }
 
 void MasterProcessor::shortTermScheduler() {
@@ -34,20 +39,17 @@ void MasterProcessor::shortTermScheduler() {
 	while (1) {
 		for (int i=0; i<SLAVES_NUMBER; i++) {
 			bool isIdle = false;
-
-			Proc *pro;
-			pro = rq->getProc(); //Get a process from ready queue, will block if there is no process in ready queue
-
 			read(idle_pip[i][0], &isIdle, sizeof(bool)); //non-block reading the idle_pipe
-			
 			if ( isIdle ) {	//If the slave is idle
+				Proc *pro;
+				pro = rq->getProc(); //Get a process from ready queue, will block if there is no process in ready queue
 				if (pw[i] != NULL) {
 					delete pw[i];	//In case of memory leak
 					pw[i] = NULL;
 				}
 				pw[i] = new ProcWrapper(pro, TIME_UNIT * (LEVEL - pro->getPriority() + 1) );
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
-				printf("Process %d with %d time quanta is passed to processor # %d\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
+				printf("\t\tProcess %d with %d time quanta is passed to processor # %d\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
 
 		}
@@ -65,7 +67,7 @@ void MasterProcessor::midTermScheduler() {
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) {
 				rq->putProc(pro);
-				printf("Process %d IO-Block ends\n", pro->getID());
+				printf("\tProcess %d IO-Block ends\n", pro->getID());
 			}
 		}
 	}
@@ -74,36 +76,26 @@ void MasterProcessor::midTermScheduler() {
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
-		sleep(1.0/CREATE_PROC_FREQUENCY);
-		int proc_id=-1;
-		for (int i=0; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
-			if (!all_processes[i]->isRunning()) { //isRunning() is read-only
-				delete all_processes[i];
-				proc_id = i;
-				break;
+		for (list<Proc *>::iterator it=all_processes.begin(); it!=all_processes.end();) {
+			if ( !(*it)->isRunning() ) {
+				IDSpace.push((*it)->getID());
+				delete *it;
+				it = all_processes.erase(it);
 			}
+			else it++;
 		}
 
-		Proc *pro;
-		if (proc_id == -1) { //If no previous process exited
-			proc_id = (int)all_processes.size();
-			//if (proc_id > MAX_PROCESS_NUMBER) continue;
-			pro = new Proc(proc_id);
+		if (IDSpace.empty()) sleep(FOR_A_WHILE);
+		else {
+			Proc * pro = new Proc(IDSpace.front());  
+			IDSpace.pop();
 			all_processes.push_back(pro);
-		}
-		else { //When there is a previous process exited, put the new process at the old one's spot
-			pro = new Proc(proc_id);
-			all_processes[proc_id] = pro;
-		}
-		
-		printf("Process %d is created\n", pro->getID()); //getID() is read-only
-		rq->putProc(pro);
-
-		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
-			sleep(FOR_A_WHILE);
+			rq->putProc(pro);
+			printf("Process %d is created\n", pro->getID());
 		}
 	}
 }
+
 
 /* -------------------- SLAVE PROCESSOR ---------------------- */
 
@@ -126,7 +118,7 @@ void SlaveProcessor::running() {
 		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
 
 		int proc_state = PROC_RUN;
-		printf("processor # %d: Process %d start running\n",slaveID, pw->pro->getID());
+		printf("\t\t\tprocessor # %d: Process %d start running\n",slaveID, pw->pro->getID());
 		for (int i=0; i<pw->timeQuanta; i++) {
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
@@ -134,17 +126,17 @@ void SlaveProcessor::running() {
 
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
-			printf("processor # %d: Process %d IO-Block\n",slaveID, pw->pro->getID());
+			printf("\t\t\tprocessor # %d: Process %d IO-Block\n",slaveID, pw->pro->getID());
 			pw->pro->setState(PROC_BLOCK);
 			bq->putProc(pw->pro);
 		    break;
 		case PROC_EXIT://Process finish executing and exit
-			printf("processor # %d: Process %d exits\n",slaveID, pw->pro->getID());
+			printf("\t\t\tprocessor # %d: Process %d exits\n",slaveID, pw->pro->getID());
 			pw->pro->setState(PROC_EXIT);
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("processor # %d: Process %d swapped out\n",slaveID, pw->pro->getID());
+			printf("\t\t\tprocessor # %d: Process %d swapped out\n",slaveID, pw->pro->getID());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			rq->putProc(pw->pro);
 		    break;
