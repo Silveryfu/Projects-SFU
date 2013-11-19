@@ -44,7 +44,7 @@ void Proc::changePriority(int i){
 
 void Proc::initialize_loc(){
     srand(time(NULL));
-    int num_of_lines=5+rand()%5;   //a process will have 10 to 110 lines of code
+    int num_of_lines=10+rand()%50;   //a process will have 10 to 110 lines of code
     int io_odd;  //probablity of a io occurence
     for(int i=0;i<num_of_lines;i++){
         io_odd=rand()%(procType*30+5);   //averagely, an io-bounded proc io occurs 1 out of 5, normal: 1/35, cpu-bounded: 1/65;

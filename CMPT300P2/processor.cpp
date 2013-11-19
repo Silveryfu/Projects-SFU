@@ -10,6 +10,11 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
 	bq = bq0;
 	proc_pip = proc_pip0;
 	idle_pip = idle_pip0;
+	for(int i=0;i<MAX_PROCESS_NUMBER;i++){
+		IDSpace.push(i+1);   //initialize the id space
+
+	}
+
    	if(pthread_create(&pt[0], NULL, &runShortTermScheduler, (void*)this)) {  //Create short-term scheduler as a thread
    	    printf("Could not create shortTerm on MasterProcessor\n");
    	}
@@ -74,36 +79,28 @@ void MasterProcessor::midTermScheduler() {
 void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
-		sleep(1.0/CREATE_PROC_FREQUENCY);
-		int proc_id=-1;
-		for (int i=0; i < (int)all_processes.size(); i++) { //delete the exited process and collect the proc_id
-			if (!all_processes[i]->isRunning()) { //isRunning() is read-only
+		for (int i=0; i < (int)all_processes.size(); i++) {
+			if (!all_processes[i]->isRunning()) { 	//isRunning() is read-only*, no IPC issue concerned
 				delete all_processes[i];
-				proc_id = i;
-				break;
+				IDSpace.push(i);
 			}
 		}
 
-		Proc *pro;
-		if (proc_id == -1) { //If no previous process exited
-			proc_id = (int)all_processes.size();
-			if (proc_id > MAX_PROCESS_NUMBER) continue;
-			pro = new Proc(proc_id);
-			all_processes.push_back(pro);
-		}
-		else { //When there is a previous process exited, put the new process at the old one's spot
-			pro = new Proc(proc_id);
-			all_processes[proc_id] = pro;
-		}
+		if((int)all_processes.size()==MAX_PROCESS_NUMBER) continue;
 		
-		printf("Process %d is created\n", pro->getID()); //getID() is read-only
+		/*create new process*/
+		Proc *pro;
+		int proc_id=IDSpace.front();
+		IDSpace.pop();
+		pro = new Proc(proc_id);
+		all_processes.push_back(pro);
+		
+		printf("Process %d is created\n", pro->getID()); //getID() is read-only*
 		rq->putProc(pro);
 
-		if (proc_id > MAX_PROCESS_NUMBER) { //When creating too many processes, sleep for a while
-			sleep(10);
-		}
 	}
 }
+
 
 /* -------------------- SLAVE PROCESSOR ---------------------- */
 

@@ -36,6 +36,7 @@ private:
 	void shortTermScheduler();
 	void midTermScheduler();
 	void longTermScheduler();
+	std::queue<int> IDSpace;
 	pthread_t pt[3];
 	ReadyMLFQ *rq;
 	BlockQueue *bq;
