@@ -1,7 +1,7 @@
 #include "proc.h"
 
 Proc::Proc(int id){
-    priority=1;    //priority is initialized to 1
+    priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
     state=PROC_RUN;
     procType=1;    //normal as default
@@ -10,7 +10,7 @@ Proc::Proc(int id){
 };
 
 Proc::Proc(int id, int pt){
-    priority=1;
+    priority=LEVEL;
     procID=id;
     state=PROC_RUN;
     procType=pt;
@@ -23,7 +23,7 @@ bool Proc::isBlocked(){
 }
 
 bool Proc::isRunning() {
-    return state == PROC_RUN;
+    return state != PROC_EXIT;
 }
 
 int Proc::getID(){

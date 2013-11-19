@@ -15,8 +15,6 @@
 
 using namespace std;
 
-
-
 #define PROC_EXIT -1
 #define PROC_BLOCK 0
 #define PROC_RUN 1
@@ -24,7 +22,7 @@ using namespace std;
 int const LEVEL=3;
 int const SLAVES_NUMBER = 3;
 int const TIME_UNIT = 10;
-int const MAX_PROCESS_NUMBER = 256;
+int const MAX_PROCESS_NUMBER = 16;
 int const IO_WAIT_TIME = 3;
 double const CREATE_PROC_FREQUENCY = 10;
 
