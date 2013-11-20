@@ -61,6 +61,7 @@ private:
 	pthread_t pt;
 	ReadyMLFQ *rq;
 	BlockQueue *bq;
+	char indent[SLAVE_INDENT_WIDTH*SLAVES_NUMBER];
 	int *s_proc_pip;
 	int *s_idle_pip;
 	int slaveID;
