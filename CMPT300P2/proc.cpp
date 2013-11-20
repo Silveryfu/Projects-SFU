@@ -28,7 +28,7 @@ bool Proc::isBlocked(){
 
 bool Proc::isRunning() {
 	synchronized(state_mutex){
-	bool isRunning=(state!=PROC_EXIT);
+	isRunning=(state!=PROC_EXIT);
 	}
     return isRunning;
 }
