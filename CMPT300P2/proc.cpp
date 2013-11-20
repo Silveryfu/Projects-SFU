@@ -64,7 +64,3 @@ int Proc::proc_execute(){
         return proc_state;
     }
 }
-
-int Proc::restCommands() {
-    return loc.size();
-}
