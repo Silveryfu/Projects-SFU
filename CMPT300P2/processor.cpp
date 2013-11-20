@@ -126,13 +126,14 @@ void SlaveProcessor::running() {
 
 		int proc_state = PROC_RUN;
 		
-		printf("%s(%d) Process(PID=%d) executing\n",indent, slaveID, pw->pro->getID());
+		pthread_mutex_lock(&(pw->pro->access)); //Protect process from being access by multiple threads
+		
+		printf("%s(%d) Process(PID=%d) executing\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->restCommands());
 		for (int i=0; i<pw->timeQuanta; i++) {
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
-
-		pthread_mutex_lock(&(pw->pro->access)); //Protect process from being access by many threads
+		
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
 			printf("%s(%d) Process(PID=%d) IO-Block\n",indent, slaveID, pw->pro->getID());
@@ -145,7 +146,7 @@ void SlaveProcessor::running() {
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("%s(%d) Process(PID=%d) swapped out\n",indent, slaveID, pw->pro->getID());
+			printf("%s(%d) Process(PID=%d) swapped out\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->restCommands());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			rq->putProc(pw->pro);
 		    break;

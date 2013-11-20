@@ -13,6 +13,7 @@ public:
     int getID();
     int getPriority();
     int proc_execute();
+    int restCommands();
     void setState(int s);
     void changePriority(int i);
     pthread_mutex_t access;
