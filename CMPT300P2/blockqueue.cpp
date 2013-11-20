@@ -22,9 +22,11 @@ Proc * BlockQueue::checkIO(){
 
 std::vector<Proc *> BlockQueue::getList(){
     std::vector<Proc *> temp;
-    list<Proc *>::iterator iter;
-    for(iter=blockQueue.begin();iter!=blockQueue.end();iter++){
-        temp.push_back(*iter);
+    synchronized(blockQueueMutex){
+        list<Proc *>::iterator iter;
+        for(iter=blockQueue.begin();iter!=blockQueue.end();iter++){
+            temp.push_back(*iter);
+        }
     }
     return temp;
 }
