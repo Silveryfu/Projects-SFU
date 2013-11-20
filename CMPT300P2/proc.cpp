@@ -1,13 +1,13 @@
 #include "proc.h"
 
 Proc::Proc(int id){
-    pthread_mutex_init(&access, NULL);
     priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
     state=PROC_RUN;
     procType=1;    //normal as default
     /*generate the simulation of a process and IOs*/
     initialize_loc();
+	pthread_mutex_init(&state_mutex, NULL);
 };
 
 Proc::Proc(int id, int pt){
@@ -20,12 +20,17 @@ Proc::Proc(int id, int pt){
     initialize_loc();
 };
 
+Proc::~Proc(){pthread_mutex_destroy(&state_mutex);}
+
 bool Proc::isBlocked(){
     return state == PROC_BLOCK;
 }
 
 bool Proc::isRunning() {
-    return state != PROC_EXIT;
+	synchronized(state_mutex){
+	bool isRunning=(state!=PROC_EXIT);
+	}
+    return isRunning;
 }
 
 int Proc::getID(){
@@ -37,7 +42,9 @@ int Proc::getPriority(){
 }
 
 void Proc::setState(int s) {
-    state = s;
+	synchronized(state_mutex){
+    state = s;    
+	}
 }
 
 void Proc::changePriority(int i){

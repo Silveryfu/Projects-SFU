@@ -7,7 +7,7 @@ public:
 
     Proc(int id);
     Proc(int id, int pt);
-    ~Proc(){};
+    ~Proc();
     bool isBlocked();
     bool isRunning();
     int getID();
@@ -15,7 +15,6 @@ public:
     int proc_execute();
     void setState(int s);
     void changePriority(int i);
-    pthread_mutex_t access;
 	
 protected:
     Proc(){};
@@ -26,7 +25,7 @@ private:
     int procType; //cpu-bounded as 2, normal as 1, io-bounded as 0
     int state;
     std::list<int> loc;   //"lines of codes"
-
+	pthread_mutex_t state_mutex;
     void initialize_loc();
 };
 #endif
