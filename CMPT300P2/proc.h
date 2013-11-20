@@ -15,6 +15,7 @@ public:
     int proc_execute();
     void setState(int s);
     void changePriority(int i);
+    pthread_mutex_t access;
 	
 protected:
     Proc(){};

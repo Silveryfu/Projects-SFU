@@ -1,6 +1,7 @@
 #include "proc.h"
 
 Proc::Proc(int id){
+    pthread_mutex_init(&access, NULL);
     priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
     state=PROC_RUN;
@@ -10,6 +11,7 @@ Proc::Proc(int id){
 };
 
 Proc::Proc(int id, int pt){
+    pthread_mutex_init(&access, NULL);
     priority=LEVEL;
     procID=id;
     state=PROC_RUN;

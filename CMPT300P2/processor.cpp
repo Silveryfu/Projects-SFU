@@ -49,7 +49,7 @@ void MasterProcessor::shortTermScheduler() {
 				}
 				pw[i] = new ProcWrapper(pro, TIME_UNIT * (LEVEL - pro->getPriority() + 1) );
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
-				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out of ReadyQueue\n  Wrapper(Proc,timeQuanta=%d)\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
+				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out of ReadyQueue\n  with timeQuanta=%d\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
 
 		}
@@ -77,13 +77,18 @@ void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
 		for (list<Proc *>::iterator it=all_processes.begin(); it!=all_processes.end();) {
-			if ( !(*it)->isRunning() ) {
+			pthread_mutex_lock( &( (*it)->access ) );
+			if ( !(*it)->isRunning() ) { //Critical section
 				printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is deleted\n", (*it)->getID());
 				IDSpace.push((*it)->getID());
+				pthread_mutex_unlock( &((*it)->access) ); //Realese the lock before deleting the process
 				delete *it;
 				it = all_processes.erase(it);
 			}
-			else it++;
+			else {
+				pthread_mutex_unlock( &((*it)->access) );
+				it++;
+			}
 		}
 
 		if (IDSpace.empty()) sleep(FOR_A_WHILE);
@@ -127,6 +132,7 @@ void SlaveProcessor::running() {
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
 
+		pthread_mutex_lock(&(pw->pro->access)); //Protect process from being access by many threads
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
 			printf("%s(%d) Process(PID=%d) IO-Block\n",indent, slaveID, pw->pro->getID());
@@ -144,6 +150,7 @@ void SlaveProcessor::running() {
 			rq->putProc(pw->pro);
 		    break;
 		}
+		pthread_mutex_unlock(&(pw->pro->access));
 	}
 
 }
