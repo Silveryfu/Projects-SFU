@@ -49,7 +49,7 @@ void MasterProcessor::shortTermScheduler() {
 				}
 				pw[i] = new ProcWrapper(pro, TIME_UNIT * (LEVEL - pro->getPriority() + 1) );
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
-				printf("## Short-Term-Scheduler ##:\n  Wrap(PID=%d,timeQuanta=%d)\n  Moved out of ReadyQueue\n  Assigned to processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
+				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out of ReadyQueue\n  Wrapper(Proc,timeQuanta=%d)\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
 
 		}
