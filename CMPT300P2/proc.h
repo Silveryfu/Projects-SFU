@@ -23,7 +23,8 @@ private:
     int priority;
     int procID;
     int procType; //cpu-bounded as 2, normal as 1, io-bounded as 0
-    int state;
+    int state;  //IPC issue involved on this variable
+    bool isRunning; //no IPC issue involved
     std::list<int> loc;   //"lines of codes"
 	pthread_mutex_t state_mutex;
     void initialize_loc();
