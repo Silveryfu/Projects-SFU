@@ -141,7 +141,7 @@ void SlaveProcessor::running() {
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("%s(%d) Process(PID=%d) swapped out\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->restCommands());
+			printf("%s(%d) Process(PID=%d) swapped out\n%s    Back to ReadyQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, indent, pw->pro->restCommands());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			rq->putProc(pw->pro);
 		    break;
