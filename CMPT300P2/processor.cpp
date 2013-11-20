@@ -24,7 +24,6 @@ MasterProcessor::MasterProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int proc_pip0[
    	if(pthread_create(&pt[2], NULL, &runLongTermScheduler, (void*)this)) {  //Create long-term scheduler as a thread
    	    printf("Could not create longTerm on MasterProcessor\n");
    	}
-	pthread_exit(NULL);
 }
 
 void MasterProcessor::shortTermScheduler() {
@@ -88,7 +87,10 @@ void MasterProcessor::longTermScheduler() {
 			}
 		}
 
-		if (IDSpace.empty()) sleep(FOR_A_WHILE);
+		if (IDSpace.empty()) {
+			//continue;
+			sleep(FOR_A_WHILE);
+		}
 		else {
 			Proc * pro = new Proc(IDSpace.front());  
 			IDSpace.pop();
