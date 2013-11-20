@@ -7,17 +7,17 @@ Proc::Proc(int id){
     procType=1;    //normal as default
     /*generate the simulation of a process and IOs*/
     initialize_loc();
-	pthread_mutex_init(&state_mutex, NULL);
+    pthread_mutex_init(&state_mutex, NULL);
 };
 
 Proc::Proc(int id, int pt){
-    pthread_mutex_init(&access, NULL);
     priority=LEVEL;
     procID=id;
     state=PROC_RUN;
     procType=pt;
     /*generate the simulation of a process and IOs*/
     initialize_loc();
+    pthread_mutex_init(&state_mutex, NULL);
 };
 
 Proc::~Proc(){pthread_mutex_destroy(&state_mutex);}
@@ -27,10 +27,11 @@ bool Proc::isBlocked(){
 }
 
 bool Proc::isRunning() {
+    bool isRun;
 	synchronized(state_mutex){
-	isRunning=(state!=PROC_EXIT);
+	   isRun=(state!=PROC_EXIT);
 	}
-    return isRunning;
+    return isRun;
 }
 
 int Proc::getID(){
@@ -70,4 +71,8 @@ int Proc::proc_execute(){
         loc.pop_front();
         return proc_state;
     }
+}
+
+int Proc::restCommands() {
+    return loc.size();
 }

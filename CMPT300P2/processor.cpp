@@ -49,7 +49,7 @@ void MasterProcessor::shortTermScheduler() {
 				}
 				pw[i] = new ProcWrapper(pro, TIME_UNIT * (LEVEL - pro->getPriority() + 1) );
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
-				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out of ReadyQueue\n  with timeQuanta=%d\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
+				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out from ReadyQueue\n  with timeQuanta=%d\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
 
 		}
@@ -67,7 +67,7 @@ void MasterProcessor::midTermScheduler() {
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) {
 				rq->putProc(pro);
-				printf("## Mid-Term-Scheduler ##:\n  Process(PID=%d) IO-Block ends\n  Moved out of BlockQueue\n  Dropped in ReadyQueue\n", pro->getID());
+				printf("## Mid-Term-Scheduler ##:\n  Process(PID=%d) IO-Block ends\n  Moved out from BlockQueue\n  Put in ReadyQueue\n", pro->getID());
 			}
 		}
 	}
@@ -77,16 +77,13 @@ void MasterProcessor::longTermScheduler() {
 	srand(time(NULL));
 	while (1) {
 		for (list<Proc *>::iterator it=all_processes.begin(); it!=all_processes.end();) {
-			pthread_mutex_lock( &( (*it)->access ) );
-			if ( !(*it)->isRunning() ) { //Critical section
+			if ( !(*it)->isRunning() ) {
 				printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is deleted\n", (*it)->getID());
 				IDSpace.push((*it)->getID());
-				pthread_mutex_unlock( &((*it)->access) ); //Realese the lock before deleting the process
 				delete *it;
 				it = all_processes.erase(it);
 			}
 			else {
-				pthread_mutex_unlock( &((*it)->access) );
 				it++;
 			}
 		}
@@ -97,7 +94,7 @@ void MasterProcessor::longTermScheduler() {
 			IDSpace.pop();
 			all_processes.push_back(pro);
 			rq->putProc(pro);
-			printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is created\n  Dropped in ReadyQueue\n", pro->getID());
+			printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is created\n  Put in ReadyQueue\n", pro->getID());
 		}
 	}
 }
@@ -126,13 +123,12 @@ void SlaveProcessor::running() {
 
 		int proc_state = PROC_RUN;
 		
-		printf("%s(%d) Process(PID=%d) executing\n",indent, slaveID, pw->pro->getID());
+		printf("%s(%d) Process(PID=%d) executing\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->restCommands());
 		for (int i=0; i<pw->timeQuanta; i++) {
 			proc_state = pw->pro->proc_execute();
 			if (proc_state == PROC_BLOCK || proc_state == PROC_EXIT) break;
 		}
 
-		pthread_mutex_lock(&(pw->pro->access)); //Protect process from being access by many threads
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
 			printf("%s(%d) Process(PID=%d) IO-Block\n",indent, slaveID, pw->pro->getID());
@@ -145,12 +141,11 @@ void SlaveProcessor::running() {
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("%s(%d) Process(PID=%d) swapped out\n",indent, slaveID, pw->pro->getID());
+			printf("%s(%d) Process(PID=%d) swapped out\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->restCommands());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			rq->putProc(pw->pro);
 		    break;
 		}
-		pthread_mutex_unlock(&(pw->pro->access));
 	}
 
 }
