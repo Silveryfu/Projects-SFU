@@ -121,7 +121,7 @@ void SlaveProcessor::running() {
 		ProcWrapper *pw;
 		bool const isIdle = true;
 		write(s_idle_pip[1], &isIdle, sizeof(bool)); //Write back the idle signal to idle_pipe
-		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe from short-term scheduler, this will block if the pipe is empty
+		read(s_proc_pip[0], &pw, sizeof(ProcWrapper *));  //read the process_pipe, this will block if the pipe is not yet been filled things by short-term-scheduler
 
 		int proc_state = PROC_RUN;
 		
@@ -133,7 +133,7 @@ void SlaveProcessor::running() {
 
 		switch(proc_state) {
 		case PROC_BLOCK: //Process IO Block
-			printf("%s(%d) Process(PID=%d) IO-Block\n",indent, slaveID, pw->pro->getID());
+			printf("%s(%d) Process(PID=%d) IO-Block\n%s    Put in BlockQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, indent, pw->pro->restCommands());
 			pw->pro->setState(PROC_BLOCK);
 			bq->putProc(pw->pro);
 		    break;
