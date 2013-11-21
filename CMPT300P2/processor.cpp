@@ -46,9 +46,9 @@ void MasterProcessor::shortTermScheduler() {
 					delete pw[i];	//In case of memory leak
 					pw[i] = NULL;
 				}
-				pw[i] = new ProcWrapper(pro, TIME_UNIT * (LEVEL - pro->getPriority() + 1) );
+				pw[i] = new ProcWrapper(pro, TIME_UNIT * (1 << (LEVEL - pro->getPriority() + 1)) );
+				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d,Priority=%d)\n  Moved out from ReadyQueue\n  with timeQuanta=%d\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->pro->getPriority(), pw[i]->timeQuanta, i+1);
 				write(proc_pip[i][1], &pw[i], sizeof(ProcWrapper *));
-				printf("## Short-Term-Scheduler ##:\n  Process(PID=%d)\n  Moved out from ReadyQueue\n  with timeQuanta=%d\n  Assigned to Processor(%d)\n", pw[i]->pro->getID(), pw[i]->timeQuanta, i+1);
 			}
 
 		}
@@ -65,8 +65,8 @@ void MasterProcessor::midTermScheduler() {
 			bqV[index]->setState(PROC_RUN); //IO blocking ends
 			Proc *pro = bq->checkIO();
 			if (pro != NULL) {
-				rq->putProc(pro);
 				printf("## Mid-Term-Scheduler ##:\n  Process(PID=%d) IO-Block ends\n  Moved out from BlockQueue\n  Put in ReadyQueue\n", pro->getID());
+				rq->putProc(pro);
 			}
 		}
 	}
@@ -95,8 +95,8 @@ void MasterProcessor::longTermScheduler() {
 			Proc * pro = new Proc(IDSpace.front());  
 			IDSpace.pop();
 			all_processes.push_back(pro);
-			rq->putProc(pro);
 			printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is created\n  Put in ReadyQueue\n", pro->getID());
+			rq->putProc(pro);
 		}
 	}
 }
@@ -143,8 +143,8 @@ void SlaveProcessor::running() {
 		    break;
 		case PROC_RUN://use up the time quanta but not finishes
 		default:  
-			printf("%s(%d) Process(PID=%d) swapped out\n%s    Back to ReadyQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, indent, pw->pro->restCommands());
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
+			printf("%s(%d) Process(PID=%d) swapped out\n%s    Changed priority to %d\n%s    Back to ReadyQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->getPriority(), indent, indent, pw->pro->restCommands());
 			rq->putProc(pw->pro);
 		    break;
 		}
