@@ -5,13 +5,13 @@ ReadyMLFQ::ReadyMLFQ(){
     pthread_cond_init(&condc, NULL);
     boostCounter=0;
     for(int i=0;i<LEVEL;i++){
-        readyqueue[i]=new std::queue<Proc *>;
+        readyMLFQ[i]=new std::queue<Proc *>;
     }
 }
 
 void ReadyMLFQ::putProc(Proc *process){
     synchronized(readyMLFQMutex){
-        readyMLFQ[process->getPriority()-1].push(process);
+        readyMLFQ[process->getPriority()-1]->push(process);
 		if(totalSize()==1) pthread_cond_signal(&condc);
 	}
 }
@@ -21,9 +21,9 @@ Proc * ReadyMLFQ::getProc(){
     synchronized(readyMLFQMutex){
 		for(int i=LEVEL-1;i>=0;i--) {
             while(totalSize()==0) pthread_cond_wait(&condc, &readyMLFQMutex);
-			if(!readyMLFQ[i].empty()){
-                procPtr=readyMLFQ[i].front();
-                readyMLFQ[i].pop();
+			if(!readyMLFQ[i]->empty()){
+                procPtr=readyMLFQ[i]->front();
+                readyMLFQ[i]->pop();
                 boostCounter++;
                 if(boostCounter==BOOST_TRIGGER){
                     priorityBoost();
@@ -40,7 +40,7 @@ Proc * ReadyMLFQ::getProc(){
 int ReadyMLFQ::totalSize(){
     int sum=0;
     for(int i=0;i<LEVEL;i++){
-        sum+=readyMLFQ[i].size();
+        sum+=readyMLFQ[i]->size();
     }
     return sum;
 }
@@ -49,19 +49,19 @@ ReadyMLFQ::~ReadyMLFQ(){
     pthread_mutex_destroy(&readyMLFQMutex);
     pthread_cond_destroy(&condc);
     for(int i=0;i<LEVEL;i++){
-        delete(readyqueue[i]);
+        delete(readyMLFQ[i]);
     }
 }
 
 void ReadyMLFQ::priorityBoost(){
-    while(!readyMLFP[1].empty()){
-        readyMLFP[0]->push(readyqueue[1]->front());
-        readyMLFP[1].pop();
+    while(!readyMLFQ[1]->empty()){
+        readyMLFQ[0]->push(readyMLFQ[1]->front());
+        readyMLFQ[1]->pop();
     }
     for(int index=1;index<LEVEL-1;index++){
-        readyMLFP[index]=readyMLFP[index+1];
+        readyMLFQ[index]=readyMLFQ[index+1];
     }
-    delete(readyMLFP[LEVEL-1]);
+    delete(readyMLFQ[LEVEL-1]);
     readyMLFQ[LEVEL-1]=new std::queue<Proc *>;
 }
 
