@@ -88,7 +88,7 @@ void MasterProcessor::longTermScheduler() {
 		}
 
 		if (IDSpace.empty()) {
-			//continue;
+			continue;
 			sleep(FOR_A_WHILE);
 		}
 		else {

@@ -25,7 +25,7 @@ Proc * ReadyMLFQ::getProc(){
                 procPtr=readyMLFQ[i]->front();
                 readyMLFQ[i]->pop();
                 boostCounter++;
-                if(boostCounter==BOOST_TRIGGER){
+                if(boostCounter>=BOOST_TRIGGER){
                     priorityBoost();
                     boostCounter=0;
                 }
@@ -54,14 +54,11 @@ ReadyMLFQ::~ReadyMLFQ(){
 }
 
 void ReadyMLFQ::priorityBoost(){
-    while(!readyMLFQ[1]->empty()){
-        readyMLFQ[0]->push(readyMLFQ[1]->front());
-        readyMLFQ[1]->pop();
+    for (int i=LEVEL-2; i>=0; i--) {
+        while(!readyMLFQ[i]->empty()) {
+            readyMLFQ[LEVEL-1]->push(readyMLFQ[i]->front());
+            readyMLFQ[i]->pop();
+        }
     }
-    for(int index=1;index<LEVEL-1;index++){
-        readyMLFQ[index]=readyMLFQ[index+1];
-    }
-    delete(readyMLFQ[LEVEL-1]);
-    readyMLFQ[LEVEL-1]=new std::queue<Proc *>;
 }
 

@@ -27,6 +27,7 @@ int const MAX_PROCESS_NUMBER = 16;
 int const IO_WAIT_TIME = 8;
 int const MIN_NUM_OF_CODE = 1;
 int const MAX_NUM_OF_CODE = 100;
+int const BOOST_TRIGGER = 30;
 double const CREATE_PROC_FREQUENCY = 10;
 double const FOR_A_WHILE = 2;
 
