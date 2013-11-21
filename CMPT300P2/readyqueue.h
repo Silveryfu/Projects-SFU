@@ -6,7 +6,11 @@
 class ReadyMLFQ{
 private:
     pthread_mutex_t readyMLFQMutex;
-    std::queue<Proc *> readMLFQ[LEVEL];
+    pthread_cond_t condc;
+    static int const BOOST_TRIGGER = 30;
+    std::queue<Proc *> *readyMLFQ[LEVEL];
+    void priorityBoost();
+    int boostCounter;
 public:
     ReadyMLFQ();
 
