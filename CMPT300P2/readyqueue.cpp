@@ -11,6 +11,11 @@ ReadyMLFQ::ReadyMLFQ(){
 
 void ReadyMLFQ::putProc(Proc *process){
     synchronized(readyMLFQMutex){
+        boostCounter++;
+        if(boostCounter>=BOOST_TRIGGER){
+            priorityBoost();
+            boostCounter=0;
+        }
         readyMLFQ[process->getPriority()-1]->push(process);
 		if(totalSize()==1) pthread_cond_signal(&condc);
 	}
@@ -24,11 +29,6 @@ Proc * ReadyMLFQ::getProc(){
 			if(!readyMLFQ[i]->empty()){
                 procPtr=readyMLFQ[i]->front();
                 readyMLFQ[i]->pop();
-                boostCounter++;
-                if(boostCounter>=BOOST_TRIGGER){
-                    priorityBoost();
-                    boostCounter=0;
-                }
                 break;
             }
         }
