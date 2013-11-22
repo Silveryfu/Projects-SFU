@@ -4,6 +4,7 @@
 using namespace std;
 
 int main() {
+	srand(time(NULL));
 	int proc_pip[SLAVES_NUMBER][2];
 	int idle_pip[SLAVES_NUMBER][2];
 	for (int i=0; i<SLAVES_NUMBER; i++) {
