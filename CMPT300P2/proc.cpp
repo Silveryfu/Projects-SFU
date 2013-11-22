@@ -53,7 +53,6 @@ void Proc::changePriority(int i){
 };
 
 void Proc::initialize_loc(){
-    srand(time(NULL));
     int num_of_lines=MIN_NUM_OF_CODE+rand()%(MAX_NUM_OF_CODE - MIN_NUM_OF_CODE); //a process will have 10 to 110 lines of code
     int io_odd;  //probablity of a io occurence
     for(int i=0;i<num_of_lines;i++){
