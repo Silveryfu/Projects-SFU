@@ -56,7 +56,6 @@ void MasterProcessor::shortTermScheduler() {
 }
 
 void MasterProcessor::midTermScheduler() {
-	srand(time(NULL));
 	while (1) {
 		vector<Proc *> bqV = bq->getList();
 		int length = bqV.size();
@@ -73,7 +72,6 @@ void MasterProcessor::midTermScheduler() {
 }
 
 void MasterProcessor::longTermScheduler() {
-	srand(time(NULL));
 	while (1) {
 		for (list<Proc *>::iterator it=all_processes.begin(); it!=all_processes.end();) {
 			if ( !(*it)->isRunning() ) {
