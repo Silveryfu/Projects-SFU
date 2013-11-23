@@ -1,7 +1,8 @@
 #include "masterprocessor.h"
 
-/*This file consists of both master processor's and slave processor's
- *definition.*/
+/*This file consists of the master processor's short-, mid- and long-term
+ *schedulers' definition.
+ */
 
 /* ---------------------- MASTER PROCESSOR------------------------- */
 
