@@ -5,8 +5,8 @@
 class Proc{
 public:
 
-    Proc(int id);
-    Proc(int id, int pt);
+    Proc(int);
+    Proc(int, int);
     ~Proc();
     bool isBlocked();
     bool isRunning();
@@ -14,9 +14,10 @@ public:
     int getPriority();
     int proc_execute();
     int restCommands();
-    void setState(int s);
-    void changePriority(int i);
-	
+    void setState(int);
+    void changePriority(int);
+    int getBlocTime();
+    void setBlocTime(int);
 protected:
     Proc(){};
 
@@ -25,7 +26,8 @@ private:
     int procID;
     int procType; //cpu-bounded as 2, normal as 1, io-bounded as 0
     int state;  //IPC issue involved on this variable
-    std::list<int> loc;   //"lines of codes"
+    int blocTime;
+	std::list<int> loc;   //"lines of codes"
 	pthread_mutex_t state_mutex;
     void initialize_loc();
 };

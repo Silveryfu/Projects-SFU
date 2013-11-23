@@ -58,18 +58,13 @@ void MasterProcessor::shortTermScheduler() {
 
 void MasterProcessor::midTermScheduler() {
 	while (1) {
-		vector<Proc *> bqV = bq->getList();
-		int length = bqV.size();
-		int index = rand() % ((length+1) * IO_WAIT_TIME);
-		if (index < length) {
-			bqV[index]->setState(PROC_RUN); //IO blocking ends
-			Proc *pro = bq->checkIO();
-			if (pro != NULL) {
+			Proc* pro=bq->getProc();
+			if(pro != NULL){
+				pro->setState(PROC_RUN);		
 				printf("## Mid-Term-Scheduler ##:\n  Process(PID=%d) IO-Block ends\n  Moved out from BlockQueue\n  Put in ReadyQueue\n", pro->getID());
 				rq->putProc(pro);
 			}
 		}
-	}
 }
 
 void MasterProcessor::longTermScheduler() {

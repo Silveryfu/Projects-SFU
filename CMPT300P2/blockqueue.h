@@ -2,19 +2,28 @@
 #define BLOCKQUEUE_H
 #include "proc.h"
 
-class Proc;
+
+class mycomparison
+{
+public:
+  bool operator() (Proc*& lhs, Proc*& rhs)
+  {
+    return (lhs->getBlocTime() < rhs->getBlocTime());
+  }
+};
 
 class BlockQueue{
 private:
     pthread_mutex_t blockQueueMutex;
-    std::list<Proc *> blockQueue;
+    std::priority_queue<Proc *, std::vector<Proc *>, mycomparison> blockQueue;
 public:
     BlockQueue();
-
-    Proc * checkIO();
-
-    std::vector<Proc *> getList();
+    Proc* getProc();
 
     void putProc(Proc *process);
 };
+
+
+
+
 #endif
