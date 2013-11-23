@@ -1,5 +1,5 @@
-#include "header.h"
-#include "processor.h"
+#include "masterprocessor.h"
+#include "slaveprocessor.h"
 
 using namespace std;
 
@@ -22,6 +22,11 @@ int main() {
 		SlP[i] = new SlaveProcessor(rq, bq, proc_pip[i], idle_pip[i], i+1);
 
 	pthread_exit(NULL);
+
+	delete rq;
+	delete bq;
+	delete MsP;
+	for (int i=0; i<SLAVES_NUMBER; i++) delete SlP[i];
 	
 	return 0;
 }

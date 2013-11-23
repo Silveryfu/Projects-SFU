@@ -1,12 +1,8 @@
-#ifndef PROCESSOR_H
-#define PROCESSOR_H
+#ifndef MASTERPROCESSOR_H
+#define MASTERPROCESSOR_H
 
-#include "header.h"
 #include "readyqueue.h"
 #include "blockqueue.h"
-
-class ReadyMLFQ;
-class BlockQueue;
 
 class MasterProcessor {
 public:
@@ -43,41 +39,6 @@ private:
 	int (*idle_pip)[2];
 	std::queue<int> IDSpace;
 	std::list<Proc *> all_processes; //Store all the processes created from long-term scheduler
-};
-
-
-class SlaveProcessor {
-public:
-	SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0, int *s_idle_pip0, int slaveID0);
-	static void *run(void *self){
-        ((SlaveProcessor*)self)->running();
-        return NULL;
-    }
-protected:
-	SlaveProcessor(){}
-
-private:
-	void running();
-	pthread_t pt;
-	ReadyMLFQ *rq;
-	BlockQueue *bq;
-	char indent[SLAVE_INDENT_WIDTH*SLAVES_NUMBER];
-	int *s_proc_pip;
-	int *s_idle_pip;
-	int slaveID;
-};
-
-//This class wrap process and running time together, in order to pass those info to slave processor
-class ProcWrapper{
-public:
-	ProcWrapper(Proc *pro0, int timeQuanta0) {
-		pro = pro0;
-		timeQuanta = timeQuanta0;
-	}
-	Proc *pro;
-	int timeQuanta;
-protected:
-	ProcWrapper(){};
 };
 
 #endif

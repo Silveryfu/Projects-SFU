@@ -1,6 +1,6 @@
 #ifndef PROC_H
 #define PROC_H
-#include "header.h"
+#include "monitor.h"
 
 class Proc{
 public:
@@ -29,5 +29,19 @@ private:
 	pthread_mutex_t state_mutex;
     void initialize_loc();
 };
+
+//This class wrap process and running time together, in order to pass those info to slave processor
+class ProcWrapper{
+public:
+    ProcWrapper(Proc *pro0, int timeQuanta0) {
+        pro = pro0;
+        timeQuanta = timeQuanta0;
+    }
+    Proc *pro;
+    int timeQuanta;
+protected:
+    ProcWrapper(){};
+};
+
 #endif
 

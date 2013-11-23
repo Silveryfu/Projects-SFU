@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <ctime>
-#include "monitor.h"
 
 using namespace std;
 
@@ -23,7 +22,7 @@ int const LEVEL=3;
 int const SLAVES_NUMBER = 3;
 int const SLAVE_INDENT_WIDTH = 4;
 int const TIME_UNIT = 10;
-int const MAX_PROCESS_NUMBER = 16;
+int const MAX_PROCESS_NUMBER = 1024;
 int const IO_WAIT_TIME = 8;
 int const MIN_NUM_OF_CODE = 1;
 int const MAX_NUM_OF_CODE = 100;

@@ -1,6 +1,5 @@
 #ifndef READYQUEUE_H
 #define READYQUEUE_H
-#include "header.h"
 #include "proc.h"
 
 class ReadyMLFQ{
