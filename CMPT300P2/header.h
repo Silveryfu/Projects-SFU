@@ -17,6 +17,8 @@ using namespace std;
 #define PROC_EXIT -1
 #define PROC_BLOCK 0
 #define PROC_RUN 1
+#define PROC_READY 2
+#define PROC_CREATE 3
 
 int const LEVEL=3;
 int const SLAVES_NUMBER = 3;
