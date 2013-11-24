@@ -31,7 +31,7 @@ void SlaveProcessor::running() {
 		case PROC_BLOCK: //Process IO Block
 			printf("%s(%d) Process(PID=%d) IO-Block\n%s    Put in BlockQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, indent, pw->pro->restCommands());
 			pw->pro->setState(PROC_BLOCK);
-			pw->pro->setBlocTime(rand()%10);
+			pw->pro->setBlocTime(1+rand()%100);
 			bq->putProc(pw->pro);
 		    break;
 		case PROC_EXIT://Process finish executing and exit
