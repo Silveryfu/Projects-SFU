@@ -1,0 +1,12 @@
+readyqueue.h
+readyqueue.cpp
+
+This is the declaration and definition of class "ReadyMLFQ". Standard template library that C++ provides is used to accomplish the date structure and operation. This class stands for the ready queue that contains all processes whose status is "ready". Class "ReadyMLFQ" provides two public functions for short-term scheduler and slave processor to call.
+One is "getProc()", which is called by short-term scheduler to take one process out of the "ReadyMLFQ". The function checks the queue of each level from the highest to the lowest, finds the first nonempty queue and takes the process in the front out of queue. If there is nothing in the "ReadyMLFQ", the function returns NULL, or it returns a pointer points to a process.
+Another function is "putProc()", which is called when a process runs out of time and swaps out. The function puts the pointer in the back of queue.
+There are also two private functions called by two public functions. One is called "totalSize()", which returns the total number of processes by adding the number of processes in every queue together. Another one is called "priorityBoost()", which sets all processes' priority the highest to prevent starvation when "putProc()" is executed too many times.
+Class "ReadyMLFQ" has a mutex to protect the critical section so that "putProc()" and "totalSize()" cannot both be accessed at the same time. What's more, it also provides a conditional variable. If there is nothing in the queue, the function "getProc()" will wait there until the "putProc()" wakes up it.
+
+blockqueue.h
+blockqueue.cpp
+This is the declaration and definition of class "BlockQueue". Standard template library that C++ provides is used to accomplish the date structure and operation. This class stands for the block queue which contains all processes that is I/O blocked. Class "BlockQueue" provides two public functions "getProc()" and "putProc()". The two functions are protected by a mutex so that they can't be accessed at the same. The data structure of block queue is min-priority queue. If the mid-term scheduler wants to pick up a process out of blockqueue, it will choose the process that has the smallest block time, that is, the top of the heap and pop it. Another function "putProc" is called when slave processors detect I/O block occurs and put the process into heap.
