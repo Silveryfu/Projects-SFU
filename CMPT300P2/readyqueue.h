@@ -9,14 +9,13 @@ private:
     std::queue<Proc *> *readyMLFQ[LEVEL];
     void priorityBoost();
     int boostCounter;
+    int totalSize();
 public:
     ReadyMLFQ();
 
     void putProc(Proc *process);
 
     Proc * getProc();
-
-    int totalSize();
 
     ~ReadyMLFQ();
 };
