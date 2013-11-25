@@ -58,7 +58,9 @@ ReadyMLFQ::~ReadyMLFQ(){
 void ReadyMLFQ::priorityBoost(){
     for (int i=LEVEL-2; i>=0; i--) {
         while(!readyMLFQ[i]->empty()) {
-            readyMLFQ[LEVEL-1]->push(readyMLFQ[i]->front());
+            Proc *ptrProc=readyMLFQ[i]->front();
+            ptrProc->changePriority(LEVEL-1-i);
+            readyMLFQ[LEVEL-1]->push(ptrProc);
             readyMLFQ[i]->pop();
         }
     }
