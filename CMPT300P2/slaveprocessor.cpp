@@ -42,8 +42,8 @@ void SlaveProcessor::running() {
 		default:  
 			if ( pw->pro->getPriority() > 1 ) pw->pro->changePriority(-1);
 			printf("%s(%d) Process(PID=%d) swapped out\n%s    Changed priority to %d\n%s    Back to ReadyQueue\n%s    Commands to be run:%d\n",indent, slaveID, pw->pro->getID(), indent, pw->pro->getPriority(), indent, indent, pw->pro->restCommands());
-			rq->putProc(pw->pro);
 			pw->pro->setState(PROC_READY);
+			rq->putProc(pw->pro);
 		    break;
 		}
 	}

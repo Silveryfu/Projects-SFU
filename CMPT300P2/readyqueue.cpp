@@ -10,6 +10,7 @@ ReadyMLFQ::ReadyMLFQ(){
 }
 
 void ReadyMLFQ::putProc(Proc *process){
+    printf("PutProc\n");
     synchronized(readyMLFQMutex){
         boostCounter++;
         if(boostCounter>=BOOST_TRIGGER){
@@ -20,14 +21,18 @@ void ReadyMLFQ::putProc(Proc *process){
         //If size of the ready queue is just becoming positive, then send a signal to wake up the waited thread.
 		if(totalSize()==1) pthread_cond_signal(&condc);
 	}
+    printf("PutProc End\n");
 }
 
 Proc * ReadyMLFQ::getProc(){
 	Proc *procPtr=NULL;
+    printf("GetProc\n");
     synchronized(readyMLFQMutex){
 		for(int i=LEVEL-1;i>=0;i--) {
             //Wait when the ready queue is empty. It will block and wait for signal.
+            printf("Start\n");
             while(totalSize()==0) pthread_cond_wait(&condc, &readyMLFQMutex);
+            printf("End\n");
 			if(!readyMLFQ[i]->empty()){
                 procPtr=readyMLFQ[i]->front();
                 readyMLFQ[i]->pop();
@@ -35,6 +40,7 @@ Proc * ReadyMLFQ::getProc(){
             }
         }
     }
+    printf("GetProc End\n");
     return procPtr;
 }
 
