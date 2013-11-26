@@ -49,3 +49,48 @@ main.cpp:
 explanation:
 This file is the entry of the whole project and the main thread of the program. All the objects (such as Master Processor, Slave Processor, Ready Queue, Block Queue and pipes for communication between Slave processors and short-term schedulers) are initiazlied in the function "main". And the main function will hold to wait all its child threads.
 
+
+
+
+test case 2:
+
+
+
+## Short-Term-Scheduler ##:
+  Process(PID=2,Priority=3)
+  Moved out from ReadyQueue
+  with timeQuanta=20
+  Assigned to Processor(2)
+                               (1) Process(PID=1) executing
+                                   Commands to be run:3
+## Short-Term-Scheduler ##:
+  Process(PID=3,Priority=3)
+  Moved out from ReadyQueue
+  with timeQuanta=20
+  Assigned to Processor(3)
+## Long-Term-Scheduler ##:
+  Process(PID=5) is created
+  Put in ReadyQueue
+                               (1) Process(PID=1) exits
+                                                              (2) Process(PID=2) executing
+                                                                  Commands to be run:27
+## Long-Term-Scheduler ##:
+  Process(PID=6) is created
+  Put in ReadyQueue
+                                                                                             (3) Process(PID=3) executing
+                                                                                                 Commands to be run:49
+## Short-Term-Scheduler ##:
+  Process(PID=4,Priority=3)
+  Moved out from ReadyQueue
+  with timeQuanta=20
+  Assigned to Processor(1)
+                                                              (2) Process(PID=2) IO-Block
+                                                                  Put in BlockQueue
+                                                                  Commands to be run:19
+## Long-Term-Scheduler ##:
+  Process(PID=1) is deleted
+                                                                                             (3) Process(PID=3) IO-Block
+                                                                                                 Put in BlockQueue
+                                                                                                 Commands to be run:33
+
+
