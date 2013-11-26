@@ -11,25 +11,20 @@ public:
 	{
 		pthread_mutex_lock(&mutex);
 	}
-
 	~Lock()
 	{
 	 	pthread_mutex_unlock(&m_mutex);
 	}
-
 	operator bool() const
 	{
 		return m_locked;
 	}
-
 	void setUnlock()
 	{
 		m_locked = false;
 	}
-
 private:
 	pthread_mutex_t &m_mutex;
         bool m_locked;
 };
-
 #endif
