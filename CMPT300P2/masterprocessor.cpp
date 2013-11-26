@@ -59,9 +59,9 @@ void MasterProcessor::shortTermScheduler() {
 void MasterProcessor::midTermScheduler() {
 	while (1) {
 			Proc* pro=bq->getProc();
-			if(pro != NULL){
-				pro->setState(PROC_RUN);		
+			if(pro != NULL){		
 				printf("## Mid-Term-Scheduler ##:\n  Process(PID=%d) IO-Block ends\n  Moved out from BlockQueue\n  Put in ReadyQueue\n", pro->getID());
+				pro->setState(PROC_READY);
 				rq->putProc(pro);
 			}
 		}
@@ -90,6 +90,7 @@ void MasterProcessor::longTermScheduler() {
 			IDSpace.pop();
 			all_processes.push_back(pro);
 			printf("## Long-Term-Scheduler ##:\n  Process(PID=%d) is created\n  Put in ReadyQueue\n", pro->getID());
+			pro->setState(PROC_READY);
 			rq->putProc(pro);
 		}
 	}
