@@ -21,6 +21,12 @@ This code is the header of master processor, including the declaration of the cl
 masterporcessor.cpp
 explanation:
 This code is the body of class MasterProcessor, including the definition of the respective class. And this code actually includes the whole content of the short-term, mid-term and long-term schedulers.
+Job of short-term scheduler:
+	Getting process from ready queue, and give the process to an idle space processor with certain time quanta.
+Job of mid-term scheduler:
+	Checking the Block queue to see if there is any end of IO-Block of a process. If so, get the process out of block queue and put it into ready queue.
+Job of long-term scheduler:
+	Creating process and deleting process in certain speed.
 
 slaveprocessor.h
 explanation:
@@ -28,7 +34,11 @@ This code is the header of class SlaveProcessor, including the declaration of th
 
 slaveprocessor.cpp
 explanation:
-This code includes the detail information of the definition of the class SlaceProcessor, which is used to execute the process it was given to.
+This code includes the detail information of the definition of the class SlaveProcessor.
+The main job of slave processor is to execute the process gained from short-term scheduler and execute the process in certain time quanta.
+If the IO-Block happened, slave processor will put the process into block queue.
+If process run out of time quanta, slave processor will degrade the priority of the process and put it into ready queue.
+If process finished executing, slave process will set the status of process as PROC_EXIT.
 
 main.cpp:
 
