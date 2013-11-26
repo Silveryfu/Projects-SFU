@@ -3,22 +3,22 @@
 Proc::Proc(int id){
     priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
-    state=PROC_RUN;
     blocTime=0;
     procType=1;    //normal as default
     /*generate the simulation of a process and IOs*/
     initialize_loc();
     pthread_mutex_init(&state_mutex, NULL);
+    setState(PROC_CREATE);
 };
 
 Proc::Proc(int id, int pt){
     priority=LEVEL;
     procID=id;
-    state=PROC_RUN;
     procType=pt;
     /*generate the simulation of a process and IOs*/
     initialize_loc();
     pthread_mutex_init(&state_mutex, NULL);
+    setState(PROC_CREATE);
 };
 
 Proc::~Proc(){pthread_mutex_destroy(&state_mutex);}
@@ -32,7 +32,11 @@ void Proc::setBlocTime(int b){
 }
 
 bool Proc::isBlocked(){
-    return state == PROC_BLOCK;
+    bool isBlock;
+    synchronized(state_mutex){
+        isBlock =(state == PROC_BLOCK);
+    }
+    return isBlock;
 }
 
 bool Proc::isRunning() {
