@@ -3,7 +3,7 @@
 Proc::Proc(int id){
     priority=LEVEL;    //priority is initialized to LEVEL
     procID=id;
-    state=PROC_RUN;
+    setState(PROC_CREATE);
     blocTime=0;
     procType=1;    //normal as default
     /*generate the simulation of a process and IOs*/
