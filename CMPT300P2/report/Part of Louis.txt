@@ -43,4 +43,4 @@ If process finished executing, slave process will set the status of process as P
 main.cpp:
 
 explanation:
-This file is the entry of the whole project and the main thread of the program.
+This file is the entry of the whole project and the main thread of the program. All the objects (such as Master Processor, Slave Processor, Ready Queue, Block Queue and pipes for communication between Slave processors and short-term schedulers) are initiazlied in the function "main". And the main function will hold to wait all its child threads.
