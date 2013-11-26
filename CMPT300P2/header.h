@@ -22,7 +22,7 @@ using namespace std;
 
 int const LEVEL=3;
 int const SLAVES_NUMBER = 3;
-int const SLAVE_INDENT_WIDTH = 4;
+int const SLAVE_INDENT_WIDTH = 31;
 int const TIME_UNIT = 10;
 int const MAX_PROCESS_NUMBER = 1024;
 int const IO_WAIT_TIME = 8;

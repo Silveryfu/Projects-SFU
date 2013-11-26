@@ -9,7 +9,9 @@ SlaveProcessor::SlaveProcessor(ReadyMLFQ *rq0, BlockQueue *bq0, int *s_proc_pip0
    	    printf("Could not create running thread on SlaveProcessor\n");
    	}
    	slaveID = slaveID0;
-   	for (int i=0; i<slaveID*SLAVE_INDENT_WIDTH; i++) indent[i] = '\t';
+   	int i;
+   	for (i=0; i<slaveID*SLAVE_INDENT_WIDTH; i++) indent[i] = ' ';
+   	indent[i] = '\0';
 }
 
 void SlaveProcessor::running() {
