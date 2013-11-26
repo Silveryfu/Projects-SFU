@@ -1,0 +1,26 @@
+Main Program Logic
+
+---------------------------------------------------------------
+The logic of running thread structure:
+
+There are 1 mother thread and 6 children threads running.
+The mother thread create children threads.
+6 children threads stand for:
+	1. Long-term scheduler
+	2. Mid-term scheduler
+	3. Short-term scheduler
+	4. Processor 1
+	5. Processor 2
+	6. Processor 3
+
+Those 6 children threads act together to form the basic functions of operating system.
+
+---------------------------------------------------------------
+The logic of data structure:
+
+Ready queue is an individual object, which was first initialized in main function.
+Block queue is an individual object, which was first initialized in main function.
+Each processor is an individual object, which was first initialized in main function.
+Master Processor is an individual object, including short-term, mid-term and long-term schedulers, which was first initialized in main function.
+Each process is an individual object, which was first initiazlied in long-term scheduler and deleted in long-term scheduler after finishing executing.
+
