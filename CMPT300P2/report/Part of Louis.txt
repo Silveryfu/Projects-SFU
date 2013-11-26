@@ -9,6 +9,10 @@ This code is the header of the Monitor used in project. It includes the declarat
 
 proc.h
 proc.cpp
+explanation:
+This code includes the declaration and definition of class Proc, whose object stands for a individual process. It has several attributes such as priority, PID, proc type, block time, proc state and line of code. And it also has some public methods in order to let outsider access the attributes. And each of the process has a state mutex in order to protect critical sections.
+There is another class in this code called ProcWrapper, which is used to wrap time quanta and Proc together. And short-term scheduler will pass the object of this class to slave processor.
+
 readyqueue.h
 readyqueue.cpp
 blockqueue.h
@@ -45,98 +49,3 @@ main.cpp:
 explanation:
 This file is the entry of the whole project and the main thread of the program. All the objects (such as Master Processor, Slave Processor, Ready Queue, Block Queue and pipes for communication between Slave processors and short-term schedulers) are initiazlied in the function "main". And the main function will hold to wait all its child threads.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-------------------------------------------------------------------------------------------
-Overview of Performance Metrics
-
-A short snap of a small part of an example of running result:
-################################################################################################
-												(3) Process(PID=169) executing
-												    Commands to be run:77
-## Long-Term-Scheduler ##:
-  Process(PID=259) is created
-  Put in ReadyQueue
-## Short-Term-Scheduler ##:
-  Process(PID=171,Priority=3)
-  Moved out from ReadyQueue
-  with timeQuanta=20
-  Assigned to Processor(2)
-				(1) Process(PID=170) executing
-				    Commands to be run:30
-												(3) Process(PID=169) swapped out
-												    Changed priority to 2
-												    Back to ReadyQueue
-												    Commands to be run:57
-## Long-Term-Scheduler ##:
-  Process(PID=260) is created
-  Put in ReadyQueue
-				(1) Process(PID=170) IO-Block
-				    Put in BlockQueue
-				    Commands to be run:29
-								(2) Process(PID=171) executing
-								    Commands to be run:76
-## Short-Term-Scheduler ##:
-  Process(PID=172,Priority=3)
-  Moved out from ReadyQueue
-  with timeQuanta=20
-  Assigned to Processor(3)
-## Long-Term-Scheduler ##:
-  Process(PID=261) is created
-  Put in ReadyQueue
-## Mid-Term-Scheduler ##:
-  Process(PID=170) IO-Block ends
-  Moved out from BlockQueue
-  Put in ReadyQueue
-								(2) Process(PID=171) IO-Block
-								    Put in BlockQueue
-								    Commands to be run:56
-################################################################################################
-
-In this example, the PID, rest commands to be run, priority, running time quanta and status of each process are collected as metrics.
-
-------------------------------------------------------------------------------------------
-Analysis of Simulation Results
-
-In the result above, at first:
-|| process-PID=170 is running on processor 1;
-|| process-PID=169 is running on processor 3;
-|| long-term scheduler creates a process-PID=259 and short-term scheduler gets a process-PID=171 with priority=3 out of ready queue and assigns it to the idle processor 2 with time-quanta=20;
-
-And then:
-|| process-PID=170 was IO blocked on processor 1;
-|| process-PID=169 is running out of time quanta (back to ready queue) on processor 3;
-|| process-PID=171 starts executing on processor 2;
-|| long-term scheduler creates a process-PID=260;
-At this time, processor 1 and processor 3 are both idle.
-
-After a while:
-|| process-PID=171 was IO blocked on processor 2;
-|| short-term scheduler gets a process-PID=172 with priority=3 out of ready queue and assigns it to the idle processor 3 with time-quanta=20, long-term scheduler creates a process-PID=261 and mid-term scheduler founds that the IO of process-PID=170 ends so mid-term scheduler gets the process-PID=170 out of block queue and put it into ready queue.
-
-It is clear that the result is correct and matches the design.
-
-------------------------------------------------------------------------------------------
-Performance Characteristics
-
-In the hypothesis of design, the followings are the crucial characteristics:
-1. The process should atomically be passed from ready queue to running state by short-term .
-2. The process should atomically be passed from block queue to ready queue.
-3. Time quanta should be calcuated according to the priority of each process by short-term scheduler.
-4. After IO-blocking or swapping out happened, the respective processor should be idle.
-5. long-term shcduler can create new process with the PID collected from old-already-exit process.
-6. All critical sections are protected by mutex.
-7. Using pthread_cond_wait() and pthread_cond_signal() to make short-term scheduler block when it asks ready queue for prcess and there is no process in ready queue.
