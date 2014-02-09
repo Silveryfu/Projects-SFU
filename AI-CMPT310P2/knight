@@ -1,0 +1,16 @@
+#lang racket
+(define (kt-depth-first init-position n nodes-limit)
+  (write-chessboard(kt-depth-first-rec(cons init-position '()) n nodes-limit)))
+
+(define (kt-depth-first-rec position n nodes-limit)
+  '())
+
+(define (goal-test kt n)
+  (cond [(>= (length kt) (* n n)) #t]
+        [else #f]
+        ))
+  
+(define (write-chessboard kt)
+  (list '()))
+
+(goal-test '(3 4 5 6 7 8 8) 2)
