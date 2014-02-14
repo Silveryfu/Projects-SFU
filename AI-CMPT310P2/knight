@@ -6,10 +6,9 @@
 
 (define (kt-depth-first-rec kt n)
   (if (goal-test kt n) kt
-      (for ([i (possible-moves kt n)])
-        (kt-depth-first-rec (cons i kt) n)))
-  )
-
+      (for/or ([i (possible-moves kt n)])
+          (kt-depth-first-rec (cons i kt) n))))
+        
 (define (possible-moves kt n)       ;return all the possible-moves at current position
   (define r (car (car kt)))         ;and here "moves" means the next POSITION
   (define c (cdr (car kt)))
@@ -34,11 +33,16 @@
     ))
 
 (define (write-chessboard kt board)
-  (if (null? kt) board 
+  (if (null? kt) (for ([i board])
+                      (display (vector->list i))
+                      (display "\n")
+                      )
       (begin (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))
       (write-chessboard (cdr kt) board))
       )
   )
+  
+ 
 
 ;gadget functions
 
@@ -57,19 +61,21 @@
         (loop (add1 i))))
     a))
 
+
+ 
 ;unit tests
 
 (kt-depth-first '(0 . 0) 5)
 
 
-(make-array 5)
+;(make-array 5)
 
-(write-chessboard '((0 . 0) (0 . 1) (0 . 2) (0 . 3)
-                    (1 . 0) (1 . 1) (1 . 2) (1 . 3)       
-                    (2 . 0) (2 . 1) (2 . 2) (2 . 3)
-                    (3 . 0) (3 . 1) (3 . 2) (3 . 3)) (make-array 4))
+;(write-chessboard '((0 . 0) (0 . 1) (0 . 2) (0 . 3)
+ ;                   (1 . 0) (1 . 1) (1 . 2) (1 . 3)       
+  ;                  (2 . 0) (2 . 1) (2 . 2) (2 . 3)
+   ;                 (3 . 0) (3 . 1) (3 . 2) (3 . 3)) (make-array 4))
 
-(possible-moves '((0 . 0)) 4)
+;(possible-moves '((0 . 0)) 4)
   
 ;(set-diff '(a b c d) '(b d e))
 
