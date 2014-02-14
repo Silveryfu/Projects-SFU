@@ -1,13 +1,16 @@
 #lang racket
-(define (kt-depth-first init-position n)
+(define nodes-created 0)           ;use a global variable to count the nodes created
+
+(define (kt-depth-first init-position n nodes-limit)
   (define board (make-array n))
   (define kt '())
-  (write-chessboard(kt-depth-first-rec(cons init-position kt) n) board))
+  (write-chessboard(kt-depth-first-rec(cons init-position kt) n nodes-limit) board n))
 
-(define (kt-depth-first-rec kt n)
+(define (kt-depth-first-rec kt n nodes-limit)
+  (set! nodes-created (add1 nodes-created))
   (if (goal-test kt n) kt
       (for/or ([i (possible-moves kt n)])
-          (kt-depth-first-rec (cons i kt) n))))
+          (kt-depth-first-rec (cons i kt) n nodes-limit))))
         
 (define (possible-moves kt n)       ;return all the possible-moves at current position
   (define r (car (car kt)))         ;and here "moves" means the next POSITION
@@ -32,13 +35,22 @@
     [else #f]
     ))
 
-(define (write-chessboard kt board)
-  (if (null? kt) (for ([i board])
-          (displayln (string-join (for/list ([j (vector->list i)]) (~a j #:width 3 #:align 'right))))
-          )
-      
-      (begin (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))
-      (write-chessboard (cdr kt) board))
+(define (write-chessboard kt board n)
+ (define count 1)
+  (if (null? kt)     
+      (begin
+        (for ([i board])
+          (if (equal? count 1) (display "((")
+          (display " ("))
+          (display (string-join (for/list ([j (vector->list i)]) 
+                                  (~a j #:width (truncate (/ (* n n) 10)) #:align 'right))))
+          (if (equal? count n) (displayln "))") (displayln ")"))
+          (set! count (add1 count)))
+        (display "Nodes created: <")
+        (display nodes-created)
+        (display ">"))
+      (begin (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))     ;set the sequence    
+      (write-chessboard (cdr kt) board n))                                                  ;number on board
       )
   )
   
@@ -65,7 +77,7 @@
  
 ;unit tests
 
-(kt-depth-first '(0 . 0) 5)
+(kt-depth-first '(0 . 0) 5 1000000)
 
 
 ;(make-array 5)
