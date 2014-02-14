@@ -8,12 +8,10 @@
 
 (define (kt-depth-first-rec kt n nodes-limit)
   (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
-  (cond                                               
-    [(goal-test kt n) kt]                             ;if goal reached
-    [(equal? nodes-created nodes-limit) '(NaN)]       ;if maxumum reached, and not succeed
-    [else (for/or ([i (possible-moves kt n)])         ;otherwise keep looking
-          (kt-depth-first-rec (cons i kt) n nodes-limit))]
-    ))
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [else (for/or ([i (possible-moves kt n)])     ;otherwise keep looking
+          (kt-depth-first-rec (cons i kt) n nodes-limit))]))
       
 (define (possible-moves kt n)                         ;return all the possible-moves at current position
   (define r (car (car kt)))                           ;and here "moves" means the next POSITION
@@ -34,42 +32,37 @@
            (get-valid-pos (cdr candi) n))))
 
 (define (goal-test kt n)
-  (cond 
-    [(>= (length kt) (* n n)) #t]
-    [else #f]
-    ))
+  (cond [(>= (length kt) (* n n)) #t]
+        [else #f]))
 
 (define (write-chessboard kt board n)
   (define count 1)
-  (cond                           
-    [(equal? kt #f) (display "No knight's tour exists!")]
-    [(equal? kt '(NaN)) (display "Maximum trials reached!")]
-    [(null? kt) 
-     (begin
-        (for ([i board])
-          (if (equal? count 1) (display "((")
-          (display " ("))
-          (display (string-join (for/list ([j (vector->list i)]) 
-                                  (~a j #:width (truncate (/ (* n n) 10)) #:align 'right))))
-          (if (equal? count n) (displayln "))") (displayln ")"))
-          (set! count (add1 count)))
-        (display "Nodes created: <")
-        (display nodes-created)
-        (display ">"))]
-    [else 
-      (begin 
-        (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))     ;set the sequence    
-        (write-chessboard (cdr kt) board n))]                                          ;number on board
-      ))
+  (cond [(equal? kt #f) (display "No knight's tour exists!")]
+        [(equal? kt '(NaN)) (display "Maximum trials reached!")]
+        [(null? kt) 
+          (begin
+            (for ([i board])
+               (if (equal? count 1) (display "((") (display " ("))
+               (display (string-join (for/list ([j (vector->list i)]) 
+                        (~a j #:width (truncate (/ (* n n) 10)) #:align 'right))))
+               (if (equal? count n) (displayln "))") (displayln ")"))
+               (set! count (add1 count)))
+             (display "Nodes created: <")
+             (display nodes-created)
+             (display ">"))]
+         [else 
+           (begin 
+           (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))     ;set the sequence    
+           (write-chessboard (cdr kt) board n))]))                                        ;number on board
+        
 
 ;gadget functions
 
 (define (set-diff l1 l2)
-  (cond
-    [(null? l1) '()]
-    [(eq? (member (car l1) l2) #f)             
-        (cons (car l1) (set-diff (cdr l1) l2))]
-    [else (set-diff (cdr l1) l2)]))
+  (cond [(null? l1) '()]
+        [(eq? (member (car l1) l2) #f)             
+            (cons (car l1) (set-diff (cdr l1) l2))]
+        [else (set-diff (cdr l1) l2)]))
 
 (define (make-array n)              ;initialize an n*n matrix with 0
   (let ((a (make-vector n)))
