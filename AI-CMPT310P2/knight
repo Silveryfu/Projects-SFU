@@ -34,9 +34,9 @@
 
 (define (write-chessboard kt board)
   (if (null? kt) (for ([i board])
-                      (display (vector->list i))
-                      (display "\n")
-                      )
+          (displayln (string-join (for/list ([j (vector->list i)]) (~a j #:width 3 #:align 'right))))
+          )
+      
       (begin (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))
       (write-chessboard (cdr kt) board))
       )
