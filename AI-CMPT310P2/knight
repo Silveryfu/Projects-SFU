@@ -4,6 +4,7 @@
 (define (kt-depth-first init-position n nodes-limit)  ;naive depth-first version
   (define board (make-array n))
   (define kt '())
+  (set! nodes-created 0)                              ;needs to be initialized for reuse
   (write-chessboard(kt-depth-first-rec(cons init-position kt) n nodes-limit) board n))
 
 (define (kt-depth-first-rec kt n nodes-limit)
@@ -69,7 +70,7 @@
             (cons (car l1) (set-diff (cdr l1) l2))]
         [else (set-diff (cdr l1) l2)]))
 
-(define (count-digits a)                              ;used to obain the maxium width of move number
+(define (count-digits a)                              ;used to obain the maximum width of move number
   (if (< a 10) 1 (+ 1 (count-digits (/ a 10)))))
 
 ;----------------kt-best-first-hquad------------------;
@@ -77,10 +78,11 @@
 (define (kt-best-first-hquad init-position n nodes-limit)  
   (define board (make-array n))                       
   (define kt '())
+  (set! nodes-created 0)                              ;needs to be initialized for reuse
   (write-chessboard(kt-best-first-hquad-rec (cons init-position kt) n nodes-limit) board n))
 
 (define (kt-best-first-hquad-rec kt n nodes-limit)
-  (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
+  (set! nodes-created (add1 nodes-created))         ;increase the counter by one when a new node created
   (cond [(goal-test kt n) kt]                         ;if goal reached
         [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
         [else (for/or ([i (best-moves-hquad kt n)])   ;otherwise keep looking
@@ -115,12 +117,12 @@
   (define c (cdr position))
   (+ (* (- (- n 1) r) r) (* (- (- n 1) c) c)))        ;hquad = r((n-1)-r)+c((n-1)-c)
   
-
 ;------------------kt-best-first-h--------------------;
 
-(define (kt-best-first-h init-position n nodes-limit)
+(define (kt-best-first-h init-position n nodes-limit) ;it uses Warnsdorff's rule as heuristic
   (define board (make-array n))
   (define kt '())
+  (set! nodes-created 0)                              ;needs to be initialized for reuse
   (write-chessboard(kt-best-first-h-rec (cons init-position kt) n nodes-limit) board n))
 
 (define (kt-best-first-h-rec kt n nodes-limit)
@@ -133,31 +135,41 @@
 (define (best-moves-h kt n)                           ;return all the possible-moves at current position
   (define r (car (car kt)))                           ;and here "moves" means the next POSITION
   (define c (cdr (car kt)))
-  (get-valid-pos (set-diff (list
+  (best-sorted-list-h
+        (get-valid-pos (set-diff (list
         (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
         (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
         (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the set-diff to get rid of
         (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
-        ) kt) n))
+        ) kt) n) n '() kt))
 
+(define (best-sorted-list-h positions n result kt)    ;obtain a sorted list (according to hquad values) of positions
+  (define maxValue -inf.f)
+  (define maxPos '())
+  (define tmpValue -inf.f)
+  (if (null? positions) result
+      (begin 
+        (for ([i positions])
+        (set! tmpValue (h-value i n (append (list i) kt)))
+        (when (> tmpValue maxValue) (begin (set! maxPos i)
+                                         (set! maxValue tmpValue))))
+        (set! result (append (list maxPos) result))
+        (best-sorted-list-h (remove maxPos positions) n result kt))))
+                                                                          
+(define (h-value position n kt)
+  (define r (car position))
+  (define c (cdr position))
+  (length (get-valid-pos (set-diff (list              ;Warnsdorff's rule: find the minimum onward position
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the set-diff to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) kt) n)))
 
 ;unit tests
 
-;(kt-depth-first '(0 . 0) 5 1000000)
-
+(kt-best-first-h '(0 . 0) 60 10000)
 (display "\n")
-
-(kt-best-first-hquad '(0 . 0) 8 1000000)
-
-;(make-array 5)
-
-;(write-chessboard '((0 . 0) (0 . 1) (0 . 2) (0 . 3)
-;                    (1 . 0) (1 . 1) (1 . 2) (1 . 3)       
-;                    (2 . 0) (2 . 1) (2 . 2) (2 . 3)
-;                    (3 . 0) (3 . 1) (3 . 2) (3 . 3)) (make-array 4))
-
-;(possible-moves '((0 . 0)) 4)
-  
-;(set-diff '(a b c d) '(b d e))
-
-;(goal-test '(1 2 3 4 5 6 7 8 9) 3) 
+(kt-best-first-h '(0 . 0) 60 10000)
+(display "\n")
+(kt-best-first-h '(0 . 0) 60 10000)
