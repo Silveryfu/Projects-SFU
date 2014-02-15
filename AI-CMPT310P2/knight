@@ -1,7 +1,7 @@
 #lang racket
 (define nodes-created 0)                              ;use a global variable as counter of the nodes created
 
-(define (kt-depth-first init-position n nodes-limit)
+(define (kt-depth-first init-position n nodes-limit)  ;naive depth-first version
   (define board (make-array n))
   (define kt '())
   (write-chessboard(kt-depth-first-rec(cons init-position kt) n nodes-limit) board n))
@@ -44,27 +44,18 @@
             (for ([i board])
                (if (equal? count 1) (display "((") (display " ("))
                (display (string-join (for/list ([j (vector->list i)]) 
-                        (~a j #:width (truncate (/ (* n n) 10)) #:align 'right))))
+                        (~a j #:width (count-digits (* n n)) #:align 'right))))
                (if (equal? count n) (displayln "))") (displayln ")"))
                (set! count (add1 count)))
              (display "Nodes created: <")
              (display nodes-created)
              (display ">"))]
          [else 
-           (begin 
-           (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))     ;set the sequence    
-           (write-chessboard (cdr kt) board n))]))                                        ;number on board
-        
+          (begin                                      ;set the sequence number on board
+           (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))         
+           (write-chessboard (cdr kt) board n))]))
 
-;gadget functions
-
-(define (set-diff l1 l2)
-  (cond [(null? l1) '()]
-        [(eq? (member (car l1) l2) #f)             
-            (cons (car l1) (set-diff (cdr l1) l2))]
-        [else (set-diff (cdr l1) l2)]))
-
-(define (make-array n)              ;initialize an n*n matrix with 0
+(define (make-array n)                                ;initialize an n*n matrix with 0
   (let ((a (make-vector n)))
     (let loop ((i 0))
       (when (< i n)
@@ -72,11 +63,91 @@
         (loop (add1 i))))
          a))
 
+(define (set-diff l1 l2)                              ;return a new list with elements in l1 not in l2
+  (cond [(null? l1) '()]
+        [(eq? (member (car l1) l2) #f)             
+            (cons (car l1) (set-diff (cdr l1) l2))]
+        [else (set-diff (cdr l1) l2)]))
 
- 
+(define (count-digits a)                              ;used to obain the maxium width of move number
+  (if (< a 10) 1 (+ 1 (count-digits (/ a 10)))))
+
+;----------------kt-best-first-hquad------------------;
+
+(define (kt-best-first-hquad init-position n nodes-limit)  
+  (define board (make-array n))                       
+  (define kt '())
+  (write-chessboard(kt-best-first-hquad-rec (cons init-position kt) n nodes-limit) board n))
+
+(define (kt-best-first-hquad-rec kt n nodes-limit)
+  (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [else (for/or ([i (best-moves-hquad kt n)])   ;otherwise keep looking
+          (kt-best-first-hquad-rec (cons i kt) n nodes-limit))]))
+
+(define (best-moves-hquad kt n)                       ;return all the possible-moves at current position
+  (define r (car (car kt)))                           ;and here "moves" means the next POSITION
+  (define c (cdr (car kt)))
+  (best-sorted-list-hquad
+        (get-valid-pos (set-diff (list
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the set-diff to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) kt) n) n '()))
+
+(define (best-sorted-list-hquad positions n result)   ;obtain a sorted list (according to hquad values) of positions
+  (define maxValue -inf.f)
+  (define maxPos '())
+  (define tmpValue -inf.f)
+  (if (null? positions) result
+      (begin 
+        (for ([i positions])
+        (set! tmpValue (hquad-value i n))
+        (when (> tmpValue maxValue) (begin (set! maxPos i)
+                                         (set! maxValue tmpValue))))
+        (set! result (append (list maxPos) result))
+        (best-sorted-list-hquad (remove maxPos positions) n result))))
+                                                                          
+(define (hquad-value position n)
+  (define r (car position))
+  (define c (cdr position))
+  (+ (* (- (- n 1) r) r) (* (- (- n 1) c) c)))        ;hquad = r((n-1)-r)+c((n-1)-c)
+  
+
+;------------------kt-best-first-h--------------------;
+
+(define (kt-best-first-h init-position n nodes-limit)
+  (define board (make-array n))
+  (define kt '())
+  (write-chessboard(kt-best-first-h-rec (cons init-position kt) n nodes-limit) board n))
+
+(define (kt-best-first-h-rec kt n nodes-limit)
+  (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [else (for/or ([i (best-moves-h kt n)])       ;otherwise keep looking
+          (kt-best-first-h-rec (cons i kt) n nodes-limit))]))
+
+(define (best-moves-h kt n)                           ;return all the possible-moves at current position
+  (define r (car (car kt)))                           ;and here "moves" means the next POSITION
+  (define c (cdr (car kt)))
+  (get-valid-pos (set-diff (list
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the set-diff to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) kt) n))
+
+
 ;unit tests
 
-(kt-depth-first '(0 . 0) 5 1000000)
+;(kt-depth-first '(0 . 0) 5 1000000)
+
+(display "\n")
+
+(kt-best-first-hquad '(0 . 0) 8 1000000)
 
 ;(make-array 5)
 
