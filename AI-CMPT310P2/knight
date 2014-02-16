@@ -1,23 +1,23 @@
 #lang racket
-(define nodes-created 0)                              ;use a global variable as counter of the nodes created
 
 (define (kt-depth-first init-position n nodes-limit)  ;naive depth-first version
   (define board (make-array n))
   (define ref-board (make-array n))                   ;a reference board to check a visited square in Big-O(1)
   (define kt '())
-  (set! nodes-created 0)                              ;needs to be initialized to reuse
-  (set! init-position (cons (car init-position) (cdr init-position)))
-  (write-chessboard(kt-depth-first-rec (cons init-position kt) n nodes-limit ref-board) n board))
+  (define nodes-created (make-parameter 0))           
+  (set! init-position (cons (first init-position) (last init-position)))
+  (write-chessboard(kt-depth-first-rec (cons init-position kt) n nodes-limit ref-board nodes-created)
+                   n board nodes-created))
 
-(define (kt-depth-first-rec kt n nodes-limit ref-board)
+(define (kt-depth-first-rec kt n nodes-limit ref-board nodes-created)
   (define t #f)
   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
-  (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
+  (nodes-created (add1 (nodes-created)))           ;increase the counter by one when a new node created
   (cond [(goal-test kt n) kt]                         ;if goal reached
-        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [(equal? (nodes-created) nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
         [else (begin 
                (for/or ([i (possible-moves kt n ref-board)]) 
-                  (set! t (kt-depth-first-rec (cons i kt) n nodes-limit ref-board)) t)
+                  (set! t (kt-depth-first-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
                   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
                   t]))
                         
@@ -33,9 +33,9 @@
 
 (define (get-valid-pos candi n)                       ;get rid of the out-of-board positions
   (if (null? candi) '() 
-      (if (and (and (>= (car (car candi)) 0)
-           (< (cdr (car candi)) n)) (and (< (car (car candi)) n)
-           (>= (cdr (car candi)) 0)))
+      (if (not (or (< (car (car candi)) 0)
+           (>= (cdr (car candi)) n) (>= (car (car candi)) n)
+           (< (cdr (car candi)) 0)))
            (cons (car candi) (get-valid-pos (cdr candi) n))
            (get-valid-pos (cdr candi) n))))
 
@@ -43,7 +43,7 @@
   (cond [(>= (length kt) (* n n)) #t]
         [else #f]))
 
-(define (write-chessboard kt n board)
+(define (write-chessboard kt n board nodes-created)
 
   (define count 1)
   (cond [(equal? kt #f) (display "No knight's tour exists!")]
@@ -57,12 +57,12 @@
                (if (equal? count n) (displayln "))") (displayln ")"))
                (set! count (add1 count)))
              (display "Nodes created: <")
-             (display nodes-created)
+             (display (nodes-created))
              (display ">"))]
          [else 
           (begin                                      ;set the sequence number on board
            (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))         
-           (write-chessboard (cdr kt) n board))]))
+           (write-chessboard (cdr kt) n board nodes-created))]))
 
 (define (make-array n)                                ;initialize an n*n matrix with 0
   (let ((a (make-vector n)))
@@ -88,19 +88,20 @@
   (define board (make-array n))
   (define ref-board (make-array n))                   ;a reference board to check a visited square in Big-O(1)
   (define kt '())
-  (set! nodes-created 0)                              ;needs to be initialized for reuse
-  (set! init-position (cons (car init-position) (cdr init-position)))
-  (write-chessboard(kt-best-first-hquad-rec (cons init-position kt) n nodes-limit ref-board) n board))
+  (define nodes-created (make-parameter 0))
+  (set! init-position (cons (first init-position) (last init-position)))
+  (write-chessboard(kt-best-first-hquad-rec (cons init-position kt) n nodes-limit ref-board nodes-created)
+                   n board nodes-created))
 
-(define (kt-best-first-hquad-rec kt n nodes-limit ref-board)
+(define (kt-best-first-hquad-rec kt n nodes-limit ref-board nodes-created)
   (define t #f)
   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
-  (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
+  (nodes-created (add1 (nodes-created)))            ;increase the counter by one when a new node created
   (cond [(goal-test kt n) kt]                         ;if goal reached
-        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [(equal? (nodes-created) nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
         [else (begin 
                (for/or ([i (best-moves-hquad kt n ref-board)]) 
-                  (set! t (kt-best-first-hquad-rec (cons i kt) n nodes-limit ref-board)) t)
+                  (set! t (kt-best-first-hquad-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
                   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
                   t]))
 
@@ -121,7 +122,7 @@
   (define tmpValue -inf.f)
   (if (null? positions) result
       (begin 
-        (for ([i positions])
+        (for ([i positions])                         
         (set! tmpValue (hquad-value i n))
         (when (> tmpValue maxValue) (begin (set! maxPos i)
                                          (set! maxValue tmpValue))))
@@ -139,11 +140,11 @@
   (define board (make-array n))
   (define ref-board (make-array n))
   (define kt '())
-  (set! nodes-created 0)                              ;needs to be initialized for reuse
-  (set! init-position (cons (car init-position) (cdr init-position)))
+  (define nodes-created (make-parameter 0))
+  (set! init-position (cons (first init-position) (last init-position)))
   (write-chessboard(kt-best-first-h-rec (cons init-position kt) n nodes-limit ref-board) n board))
 
-(define (kt-best-first-h-rec kt n nodes-limit ref-board)
+(define (kt-best-first-h-rec kt n nodes-limit ref-board nodes-created)
   (define t #f)
   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
   (set! nodes-created (add1 nodes-created))           ;increase the counter by one when a new node created
@@ -151,7 +152,7 @@
         [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
         [else (begin 
                (for/or ([i (best-moves-h kt n ref-board)]) 
-                  (set! t (kt-best-first-h-rec (cons i kt) n nodes-limit ref-board)) t)
+                  (set! t (kt-best-first-h-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
                   (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
                   t]))
 
@@ -185,10 +186,11 @@
   (length (possible-moves kt n ref-board)))
 
 ;unit tests
-
-(kt-depth-first '(0 . 0) 8 1000000)
+(require profile)
+(profile (kt-depth-first '(0 0) 8 1000000))
+;
 (display "\n")
-(kt-best-first-hquad '(0 0) 8 1000000)
+;(kt-best-first-hquad '(0 0) 200 1000000)
 (display "\n")
-(kt-best-first-h '(0 0) 8 1000000)
+;(kt-best-first-h '(0 0) 200 1000000)
 
