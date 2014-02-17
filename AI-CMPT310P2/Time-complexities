@@ -1,0 +1,74 @@
+Welcome to DrRacket, version 5.93--2014-01-29(-/f) [3m].
+Language: racket.
+############################################
+############################################
+Test cases when n = 8
+
+For kt-depth-first: 
+kt-depth-first-success-rate: 1/10
+kt-depth-first-average-nodes/time complexity: 4590738/5
+
+For kt-best-first-hquad: 
+kt-best-first-hquad-success-rate: 1
+kt-best-first-hquad-average-nodes/time complexity: 1457/10
+
+For kt-best-first-h: 
+kt-best-first-h-success-rate: 1
+kt-best-first-h-average-nodes/time complexity: 64
+############################################
+Test cases when n = 30
+
+For kt-depth-first: 
+kt-depth-first-success-rate: 0
+kt-depth-first-average-nodes/time complexity: 1000000
+
+For kt-best-first-hquad: 
+kt-best-first-hquad-success-rate: 9/10
+kt-best-first-hquad-average-nodes/time complexity: 219365/2
+
+For kt-best-first-h: 
+kt-best-first-h-success-rate: 1
+kt-best-first-h-average-nodes/time complexity: 900
+############################################
+Test cases when n = 60
+
+For kt-depth-first: 
+kt-depth-first-success-rate: 0
+kt-depth-first-average-nodes/time complexity: 1000000
+
+For kt-best-first-hquad: 
+kt-best-first-hquad-success-rate: 4/5
+kt-best-first-hquad-average-nodes/time complexity: 2031059/10
+
+For kt-best-first-h: 
+kt-best-first-h-success-rate: 9/10
+kt-best-first-h-average-nodes/time complexity: 103240
+############################################
+Test cases when n = 100
+
+For kt-depth-first: 
+kt-depth-first-success-rate: 0
+kt-depth-first-average-nodes/time complexity: 1000000
+
+For kt-best-first-hquad: 
+kt-best-first-hquad-success-rate: 3/5
+kt-best-first-hquad-average-nodes/time complexity: 4407713/10
+
+For kt-best-first-h: 
+kt-best-first-h-success-rate: 3/5
+kt-best-first-h-average-nodes/time complexity: 406000
+############################################
+Test cases when n = 200
+
+For kt-depth-first: 
+kt-depth-first-success-rate: 0
+kt-depth-first-average-nodes/time complexity: 1000000
+
+For kt-best-first-hquad: 
+kt-best-first-hquad-success-rate: 2/5
+kt-best-first-hquad-average-nodes/time complexity: 6164877/10
+
+For kt-best-first-h: 
+kt-best-first-h-success-rate: 3/5
+kt-best-first-h-average-nodes/time complexity: 424000
+> 
