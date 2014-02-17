@@ -1,0 +1,195 @@
+#lang racket
+
+(define (kt-depth-first init-position n nodes-limit)  ;naive depth-first version
+  (define board (make-array n))
+  (define ref-board (make-array n))                   ;a reference board to check a visited square in Big-O(1)
+  (define kt '())
+  (define nodes-created (make-parameter 0))           
+  (set! init-position (cons (first init-position) (last init-position)))
+  (write-chessboard(kt-depth-first-rec (cons init-position kt) n nodes-limit ref-board nodes-created)
+                   n board nodes-created))
+
+(define (kt-depth-first-rec kt n nodes-limit ref-board nodes-created)
+  (define t #f)
+  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
+  (nodes-created (add1 (nodes-created)))              ;increase the counter by one when a new node created
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? (nodes-created) nodes-limit) '(NaN)] ;if maxumum reached, and not succeed
+        [else (begin 
+               (for/or ([i (possible-moves kt n ref-board)]) 
+                  (set! t (kt-depth-first-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
+                  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
+                  t]))
+                        
+(define (possible-moves kt n ref-board)               ;return all the possible-moves at current position
+  (define r (car (car kt)))                           ;and here "moves" means the next POSITION
+  (define c (cdr (car kt)))
+  (check-board (get-valid-pos (list
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the check-board to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) n) ref-board))
+
+(define (get-valid-pos candi n)                       ;get rid of the out-of-board positions
+  (if (null? candi) '() 
+      (if (not (or (< (car (car candi)) 0)
+           (>= (cdr (car candi)) n) (>= (car (car candi)) n)
+           (< (cdr (car candi)) 0)))
+           (cons (car candi) (get-valid-pos (cdr candi) n))
+           (get-valid-pos (cdr candi) n))))
+
+(define (goal-test kt n)
+  (cond [(>= (length kt) (* n n)) #t]
+        [else #f]))
+
+(define (write-chessboard kt n board nodes-created)
+
+  (define count 1)
+  (cond [(equal? kt #f) (display "No knight's tour exists!")]
+        [(equal? kt '(NaN)) (display "Maximum trials reached!")]
+        [(null? kt) 
+          (begin
+            (for ([i board])
+               (if (equal? count 1) (display "((") (display " ("))
+               (display (string-join (for/list ([j (vector->list i)]) 
+                        (~a j #:width (count-digits (* n n)) #:align 'right))))
+               (if (equal? count n) (displayln "))") (displayln ")"))
+               (set! count (add1 count)))
+             (display "Nodes created: <")
+             (display (nodes-created))
+             (display ">"))]
+         [else 
+          (begin                                      ;set the sequence number on board
+           (vector-set! (vector-ref board (car (car kt))) (cdr (car kt)) (length kt))         
+           (write-chessboard (cdr kt) n board nodes-created))]))
+
+(define (make-array n)                                ;initialize an n*n matrix with 0
+  (let ((a (make-vector n)))
+    (let loop ((i 0))
+      (when (< i n)
+        (vector-set! a i (make-vector n))
+        (loop (add1 i))))
+         a))
+
+(define (check-board candilist ref-board)             ;return a new list without visited squares
+   (cond [(null? candilist) '()]
+         [(equal? (vector-ref (vector-ref ref-board (car (car candilist))) (cdr (car candilist))) 0)
+          (cons (car candilist) (check-board (cdr candilist) ref-board))]
+         [else (check-board (cdr candilist) ref-board)]
+      ))
+  
+(define (count-digits a)                              ;used to obain the maximum width of move number
+  (if (< a 10) 1 (+ 1 (count-digits (/ a 10)))))
+
+;----------------kt-best-first-hquad------------------;
+
+(define (kt-best-first-hquad init-position n nodes-limit)  
+  (define board (make-array n))
+  (define ref-board (make-array n))                   ;a reference board to check a visited square in Big-O(1)
+  (define kt '())
+  (define nodes-created (make-parameter 0))
+  (set! init-position (cons (first init-position) (last init-position)))
+  (write-chessboard(kt-best-first-hquad-rec (cons init-position kt) n nodes-limit ref-board nodes-created)
+                   n board nodes-created))
+
+(define (kt-best-first-hquad-rec kt n nodes-limit ref-board nodes-created)
+  (define t #f)
+  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
+  (nodes-created (add1 (nodes-created)))              ;increase the counter by one when a new node created
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? (nodes-created) nodes-limit) '(NaN)] ;if maxumum reached, and not succeed
+        [else (begin 
+               (for/or ([i (best-moves-hquad kt n ref-board)]) 
+                  (set! t (kt-best-first-hquad-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
+                  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
+                  t]))
+
+(define (best-moves-hquad kt n ref-board)             ;return all the possible-moves at current position
+  (define r (car (car kt)))                           ;and here "moves" means the next POSITION
+  (define c (cdr (car kt)))
+  (best-sorted-list-hquad
+        (check-board (get-valid-pos (list
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the check-board to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) n) ref-board) n '()))
+
+(define (best-sorted-list-hquad positions n result)   ;obtain a sorted list (according to hquad values) of positions
+  (define maxValue -inf.f)
+  (define maxPos '())
+  (define tmpValue -inf.f)
+  (if (null? positions) result
+      (begin 
+        (for ([i positions])                         
+        (set! tmpValue (hquad-value i n))
+        (when (> tmpValue maxValue) (begin (set! maxPos i)
+                                         (set! maxValue tmpValue))))
+        (set! result (append (list maxPos) result))
+        (best-sorted-list-hquad (remove maxPos positions) n result))))
+                                                                          
+(define (hquad-value position n)
+  (define r (car position))
+  (define c (cdr position))
+  (+ (* (- (- n 1) r) r) (* (- (- n 1) c) c)))        ;hquad = r((n-1)-r)+c((n-1)-c)
+  
+;------------------kt-best-first-h--------------------;
+
+(define (kt-best-first-h init-position n nodes-limit) ;it uses Warnsdorff's rule as heuristic
+  (define board (make-array n))
+  (define ref-board (make-array n))
+  (define kt '())
+  (define nodes-created (make-parameter 0))
+  (set! init-position (cons (first init-position) (last init-position)))
+  (write-chessboard(kt-best-first-h-rec (cons init-position kt) n nodes-limit ref-board nodes-created) n board nodes-created))
+
+(define (kt-best-first-h-rec kt n nodes-limit ref-board nodes-created)
+  (define t #f)
+  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 1)
+  (nodes-created (add1 (nodes-created)))              ;increase the counter by one when a new node created
+  (cond [(goal-test kt n) kt]                         ;if goal reached
+        [(equal? nodes-created nodes-limit) '(NaN)]   ;if maxumum reached, and not succeed
+        [else (begin 
+               (for/or ([i (best-moves-h kt n ref-board)]) 
+                  (set! t (kt-best-first-h-rec (cons i kt) n nodes-limit ref-board nodes-created)) t)
+                  (vector-set! (vector-ref ref-board (car (car kt))) (cdr (car kt)) 0))
+                  t]))
+
+(define (best-moves-h kt n ref-board)                 ;return all the possible-moves at current position
+  (define r (car (car kt)))                           ;and here "moves" means the next POSITION
+  (define c (cdr (car kt)))
+  (best-sorted-list-h
+        (check-board (get-valid-pos (list
+        (cons (- r 1) (- c 2)) (cons (- r 2) (- c 1)) 
+        (cons (- r 1) (+ c 2)) (cons (- r 2) (+ c 1)) ;construct the list of 8 candidates
+        (cons (+ r 1) (- c 2)) (cons (+ r 2) (- c 1)) ;and use the check-board to get rid of
+        (cons (+ r 1) (+ c 2)) (cons (+ r 2) (+ c 1)) ;visited positions
+        ) n) ref-board) n '() kt ref-board))
+
+(define (best-sorted-list-h positions n result kt ref-board)   
+  (define maxValue -inf.f)                            ;obtain a sorted list (according to hquad values) of positions
+  (define maxPos '())
+  (define tmpValue -inf.f)
+  (if (null? positions) result
+      (begin 
+        (for ([i positions])
+        (set! tmpValue (h-value i n (append (list i) kt) ref-board))
+        (when (> tmpValue maxValue) (begin (set! maxPos i)
+                                         (set! maxValue tmpValue))))
+        (set! result (append (list maxPos) result))
+        (best-sorted-list-h (remove maxPos positions) n result kt ref-board))))
+                                                                          
+(define (h-value position n kt ref-board)
+  (define r (car position))
+  (define c (cdr position))
+  (length (possible-moves kt n ref-board)))
+
+;unit tests
+
+(kt-depth-first '(0 0) 8 64000)
+(display "\n")
+(kt-best-first-hquad '(0 0) 80 1000000)
+(display "\n")
+(kt-best-first-h '(0 0) 80 1000000)
+
