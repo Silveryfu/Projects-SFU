@@ -286,8 +286,8 @@
   (displayln "############################################")
   (display "Test cases when n = ")
   (displayln n)
-  (for ([i (in-range 10)])
-    (set! r (random n))
+  (for ([i (in-range 10)])                           ;do 10 tests
+    (set! r (random n))                              ;randomly pick up r and c each time
     (set! c (random n))
     (set! nodes-created (kt-depth-first (list r c) n nodes-limit))
     (when (< nodes-created nodes-limit) (set! kt-depth-first-success-rate (add1 kt-depth-first-success-rate)))
