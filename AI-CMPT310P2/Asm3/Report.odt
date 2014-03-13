@@ -1,0 +1,20 @@
+﻿7.20
+
+Answer:
+S1: (~A v B v E) ^ (~B v A) ^ (~E v A)
+
+S2: (~E v D)
+
+S3: (~C v ~F v ~B)
+
+S4: (~E v B)
+
+S5: (~B v F)
+
+S6: (~B v C)
+
+7.12 
+
+Answer:
+
+In order to prove B
