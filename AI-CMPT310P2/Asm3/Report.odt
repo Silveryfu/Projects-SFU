@@ -17,4 +17,51 @@ S6: (~B v C)
 
 Answer:
 
-In order to prove B
+Let KB denote {Si, 1<=i<=6}. In order to prove (alpha = ~A ^  ~B), we can conduct the PL-Resolution algorithm to KB ^ ~alpha, namely adding:
+
+S7: (A v B)
+
+and for convenience, break S1 into:
+
+S01:  (~A v B v E)
+
+S02:  (~B v A)
+
+S03:  (~E v A)
+
+That gives us the set for resolution:
+
+S01:  (~A v B v E)
+
+S02:  (~B v A)
+
+S03:  (~E v A)
+
+S2: (~E v D)
+
+S3: (~C v ~F v ~B)
+
+S4: (~E v B)
+
+S5: (~B v F)
+
+S6: (~B v C)
+
+S7: (A v B)
+
+Thus, PL-Resolution {S11, S12, S13, S2, S3, S4, S5, S6, S7} :
+
+Resolve{ S7, S6 } -> S8: (A v C)
+Resolve{ S7, S02 } -> S9: (A)
+Resolve{ S4, S01 } -> S10 : (~A v B)
+Resolve{ S9, S10 } -> S11: (B)
+Resolve{ S11, S3 } -> S12: (~C v ~F)
+Resolve{ S12, S5 } -> S13: (~B v ~C)
+Resolve{ S13, S6 } -> S14: (~B)
+Resolve{ S14, S11 } -> S15: ()      -> This is an empty set
+
+Therefore, KB ^ (~alpha) is unsatisfiable; by contradiction, KB entails alpha = (~A ^ ~B)
+
+
+
+
