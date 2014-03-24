@@ -17,7 +17,7 @@
     (when (null? i) (set! flag #t)) flag)
   flag)
 
-(define (remove-exist clauses new_clause)
+(define (remove-exist clauses new_clause)  ; remove those clauses already exist
   (define result new_clause)
   (if (equal? new_clause '(#f)) '()  
   (begin 
@@ -51,7 +51,7 @@
 (define (loop clauses)
   (define L (length clauses))
   (define resolvent '(#f))        
-  ;(displayln clauses)                                                  
+  ;(displayln clauses)                     ; uncomment this to show the clauses each iterations                                           
   (cond [(contain-empty? clauses) #t]
         [else (begin 
                 (for ([i (in-range L)])

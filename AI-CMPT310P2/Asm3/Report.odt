@@ -64,14 +64,13 @@ Resolve{ S14, S11 } -> S15: ()      -> This is an empty set
 Therefore, KB ^ (~alpha) is unsatisfiable; by contradiction, KB entails alpha = (~A ^ ~B)
 
 
-
-
-
-
 Question 3
 
 
-This program contains the PL-Resolution part, the converter part has some bugs., unfortunetly. Thus, the program reads the test cases from the assn3test-cnf.rkt file, and conduct the resolution efficiently.
+The program reads the test cases from the assn3test-cnf.rkt file. It not only ensures the correctness of the results, but also contains quite a few improvements on its efficiency.
+
+
+Code Section:
 
 1 #lang racket
 2 (include "./assn3test-cnf.rkt")            
@@ -92,17 +91,17 @@ This program contains the PL-Resolution part, the converter part has some bugs.,
 17     (when (null? i) (set! flag #t)) flag)
 18   flag)
 19 
-20 (define (remove-exist clauses new_clause)
+20 (define (remove-exist clauses new_clause)   ; remove those clauses already exist
 21   (define result new_clause)
 22   (if (equal? new_clause '(#f)) '()  
 23   (begin 
 24     (for ([i clauses])
 25       (for ([j new_clause])
 26         (when (equal? (list->set i) (list->set j)) (set! result (remove j result))))) result)))
-27                                                       ; **use hash set to avoid duplication
+27                                                                    ; **use hash set to avoid duplication
 28 
 29 (define (PL-Resolve C1 C2)    
-30   (define resolvent '(#f))                 ; the resolvent is initialized #f, to represent the case as no resolvent
+30   (define resolvent '(#f))                             ; the resolvent is initialized #f, to represent the case as no resolvent
 31   (for ([i C1])              
 32     (for ([j C2])
 33       (cond [(complementary-literals? i j)    ; once find a complementary pair, add to the resolvents
@@ -113,7 +112,7 @@ This program contains the PL-Resolution part, the converter part has some bugs.,
 38 
 39 (define (PL-Resolution KB alpha num)
 40   (define clauses (append alpha KB))       ; **Left-append alpha
-41   (if (null? KB) (if (loop alpha)          ; handle the case when KB is empty
+41   (if (null? KB) (if (loop alpha)                ; handle the case when KB is empty
 42                      (fprintf (current-output-port) 
 43                               "KB entails query ~s\n" num)
 44                      (fprintf (current-output-port) 
@@ -123,7 +122,7 @@ This program contains the PL-Resolution part, the converter part has some bugs.,
 48                      (fprintf (current-output-port) 
 49                               "KB does not entail query ~s\n" num))))
 50  
-51 (define (loop clauses)
+51 (define (loop clauses)                            
 52   (define L (length clauses))
 53   (define resolvent '(#f))        
 54   ;(displayln clauses)                                                  
@@ -141,7 +140,150 @@ This program contains the PL-Resolution part, the converter part has some bugs.,
 66                                                                        ; to propogate the unit or short clauses
 
 
+As shown in the code and code comments (marked as **), there are several implementations to improve the efficiency of PL-Resolution, which includes:
 
+1. Eliminate redundant clauses by not adding duplicate resolvent to the clauses. Use list->set transform the two clauses before comparing them, so that more possible redundant are avoided.
 
+2. Left-append alpha, namely start the resolution with the query.
 
-Print the clauses !
+3. Keep a focus on the goal, namely every time we find new resolvents, we left-append them and start resolution from them.
+
+4. Propaget the unit clauses as much as possible by sorting the clauses according to the length of clause . 
+
+And as we will see in the test session, these methods indeed improve the efficiency of resolution.
+
+Testing Section:
+
+Firstly, the supplied tests:
+
+1 (displayln "The provided usual cases:\n")
+2 (PL-Resolution KB_CNF (list-ref queries_N_CNF 0) 0)
+3 (PL-Resolution KB_CNF (list-ref queries_N_CNF 1) 1)
+4 (PL-Resolution KB_CNF (list-ref queries_N_CNF 2) 2)
+5 (PL-Resolution KB_CNF (list-ref queries_N_CNF 3) 3)
+6 (PL-Resolution KB_CNF (list-ref queries_N_CNF 4) 4)
+
+Output:
+
+KB entails query 0
+KB does not entail query 1
+KB does not entail query 2
+KB does not entail query 3
+KB entails query 4
+
+We can display the clauses each iteration to verify its correctness as well as see how it improves efficiency:
+
+((~Girl) (FirstGrade) (~FirstGrade Child) (~Child ~Male Boy) (~Kindergarten Child) (~Child ~Female Girl) (Female))
+((~Girl) (FirstGrade) (Female) (~Child ~Female) (~FirstGrade Child) (~Kindergarten Child) (~Child ~Male Boy) (~Child ~Female Girl))
+((Child) (~Girl) (FirstGrade) (Female) (~Child ~Female) (~FirstGrade Child) (~Kindergarten Child) (~Child ~Male Boy) (~Child ~Female Girl))
+((~Female) (Child) (~Girl) (FirstGrade) (Female) (~Child ~Female) (~FirstGrade Child) (~Kindergarten Child) (~Child ~Male Boy) (~Child ~Female Girl))
+(() (~Female) (Child) (~Girl) (FirstGrade) (Female) (~Child ~Female) (~FirstGrade Child) (~Kindergarten Child) (~Child ~Male Boy) (~Child ~Female Girl))
+
+As it shows, it only takes 5 iterations/resolutions to obtain the empty clause. The query was left-appended to the KB, all the clauses are sorted by their length, and there are no duplications.
+
+Secondly, the corner tests:
+
+Define some KBs and queries:
+
+1 (displayln "\nOther corner cases:\n")
+2 (define KB_CNF_test_1
+3   '((FirstGrade) (~FirstGrade)))   ;  contradictory KB
+4 
+5 (define KB_CNF_test_2 
+6   '((FirstGrade ~FirstGrade)))      ;  tautology KB
+7 
+8 (define KB_CNF_test_3
+9   '())                                              ;  empty KB
+10 
+11 (define KB_CNF_test_4             ; to test with fifth query
+12   '((q p)))
+13 
+14 (define queries_N_CNF_test  ;queries are presented as ~query in CNF, 
+15   '(((FirstGrade) (~Boy))              ; contingencies query
+16     ((FirstGrade) (~FirstGrade))    ; tautology query
+17     ((~Boy Boy))                           ; contradictory query
+18     ((FirstGrade))                          ; single literal query
+19     ((~q ~p))))                               ; to test with KB_4
+
+Do the test:
+
+Given a contradictory KB
+
+1 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 0) 5)   ; given a contradictory KB, contingencies query
+2 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 1) 6)   ; given a contradictory KB, tautology query
+3 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 2) 7)   ; given a contradictory KB, contradictory query
+
+Output:
+
+KB entails query 5
+KB entails query 6
+KB entails query 7
+
+Given a tautology KB
+
+1 (PL-Resolution KB_CNF_test_2 (list-ref queries_N_CNF_test 0) 8)    ; given a tautology KB, contingencies query
+2 (PL-Resolution KB_CNF_test_2 (list-ref queries_N_CNF_test 1) 9)    ; given a tautology KB, tautology query 
+3 (PL-Resolution KB_CNF_test_2 (list-ref queries_N_CNF_test 2) 10)  ; given a tautology KB, contradictory query 
+
+Output:
+
+KB does not entail query 8
+KB entails query 9
+KB does not entail query 10
+
+Given a empty KB
+
+1 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 0) 11)  ; given an empty KB, contingencies query
+2 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 1) 12)  ; given an empty KB, tautology query
+3 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 2) 13)  ; given an empty KB, contradictory query
+
+Output:
+
+KB does not entail query 11
+KB entails query 12
+KB does not entail query 13
+
+Given a contingencies KB
+
+1 (PL-Resolution KB_CNF (list-ref queries_N_CNF_test 0) 14)     ; given a contingencies KB, contingencies query
+2 (PL-Resolution KB_CNF (list-ref queries_N_CNF_test 1) 15)     ; given a contingencies KB, tautology query
+3 (PL-Resolution KB_CNF (list-ref queries_N_CNF_test 2) 16)     ; given a contingencies KB, contradictory query
+
+Output:
+
+KB does not entail query 14
+KB entails query 15
+KB does not entail query 16
+
+A case with multiple complementary pairs '((q p)) and ((~q ~p))
+
+(PL-Resolution KB_CNF_test_4 (list-ref queries_N_CNF_test 4) 17)    ; the case with multiple complementary pairs
+
+Output:
+
+KB does not entail query 17
+
+Finally, we use the Question 2 for testing:
+
+1 ; the case in Question 2
+2 (define clauses
+3  '((~A B E)
+4   (~B A)
+5   (~E A)
+6   (~E D)
+7   (~C ~F ~B)
+8   (~E B)
+9   (~B F)
+10   (~B C)
+11   (A B))
+12    )
+13 
+14 (define new_clause
+15   '((A B))
+16   )
+17 
+18 (PL-Resolution clauses new_clause 18)
+
+Output:
+
+KB entails query 18
