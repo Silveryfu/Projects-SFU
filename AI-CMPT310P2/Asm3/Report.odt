@@ -1,6 +1,7 @@
-﻿7.20
+﻿Question 1   7.20
 
 Answer:
+
 S1: (~A v B v E) ^ (~B v A) ^ (~E v A)
 
 S2: (~E v D)
@@ -13,11 +14,11 @@ S5: (~B v F)
 
 S6: (~B v C)
 
-7.12 
+Question 2    7.12 
 
 Answer:
 
-Let KB denote {Si, 1<=i<=6}. In order to prove (alpha = ~A ^  ~B), we can conduct the PL-Resolution algorithm to KB ^ ~alpha, namely adding:
+Let KB denote {Si, 1<=i<=6}. In order to prove (alpha = ~A ^  ~B), we can conduct the PL-Resolution algorithm to KB ^ ~alpha, namely adding the negation of alpha:
 
 S7: (A v B)
 
@@ -65,3 +66,82 @@ Therefore, KB ^ (~alpha) is unsatisfiable; by contradiction, KB entails alpha = 
 
 
 
+
+
+Question 3
+
+
+This program contains the PL-Resolution part, the converter part has some bugs., unfortunetly. Thus, the program reads the test cases from the assn3test-cnf.rkt file, and conduct the resolution efficiently.
+
+1 #lang racket
+2 (include "./assn3test-cnf.rkt")            
+3 
+4 (define (complementary-literals? l1 l2)
+5   (let* ([l1str (symbol->string l1)]
+6          [l2str (symbol->string l2)]
+7          [l1neg (equal? #\~ (string-ref l1str 0))]
+8          [l2neg (equal? #\~ (string-ref l2str 0))]
+9          [symbol1 (if l1neg (substring l1str 1) l1str)]
+10          [symbol2 (if l2neg (substring l2str 1) l2str)])
+11     (and (xor l1neg l2neg)
+12          (equal? symbol1 symbol2))))
+13 
+14 (define (contain-empty? clauses)           ; check if contains empty clause
+15   (define flag #f)
+16   (for/or ([i clauses])
+17     (when (null? i) (set! flag #t)) flag)
+18   flag)
+19 
+20 (define (remove-exist clauses new_clause)
+21   (define result new_clause)
+22   (if (equal? new_clause '(#f)) '()  
+23   (begin 
+24     (for ([i clauses])
+25       (for ([j new_clause])
+26         (when (equal? (list->set i) (list->set j)) (set! result (remove j result))))) result)))
+27                                                       ; **use hash set to avoid duplication
+28 
+29 (define (PL-Resolve C1 C2)    
+30   (define resolvent '(#f))                 ; the resolvent is initialized #f, to represent the case as no resolvent
+31   (for ([i C1])              
+32     (for ([j C2])
+33       (cond [(complementary-literals? i j)    ; once find a complementary pair, add to the resolvents
+34              (if (equal? resolvent '(#f)) (set! resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))
+35                               (set! resolvent (append resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))))]
+36             [else #t])))
+37   resolvent)
+38 
+39 (define (PL-Resolution KB alpha num)
+40   (define clauses (append alpha KB))       ; **Left-append alpha
+41   (if (null? KB) (if (loop alpha)          ; handle the case when KB is empty
+42                      (fprintf (current-output-port) 
+43                               "KB entails query ~s\n" num)
+44                      (fprintf (current-output-port) 
+45                               "KB does not entail query ~s\n" num))
+46   (if (loop clauses) (fprintf (current-output-port)  ; the recursive call
+47                               "KB entails query ~s\n" num)
+48                      (fprintf (current-output-port) 
+49                               "KB does not entail query ~s\n" num))))
+50  
+51 (define (loop clauses)
+52   (define L (length clauses))
+53   (define resolvent '(#f))        
+54   ;(displayln clauses)                                                  
+55   (cond [(contain-empty? clauses) #t]
+56         [else (begin 
+57                 (for ([i (in-range L)])
+58                   (for ([j (in-range (add1 i) L)])
+59                     #:break (not (equal? '(#f) resolvent))                ; **keep a focus on the goal
+60                     (set! resolvent (remove-exist clauses (PL-Resolve (list-ref clauses i) (list-ref clauses j))))
+61                     (cond [(null? resolvent) (set! resolvent '(#f))]   ; if all new clauses already exist, ignore 
+62                           [else (when (not (equal? resolvent '(#f)))     ; and reset resolvent
+63                                   (set! clauses (append resolvent clauses)))]))) ; **left append the new resolvent
+64                 (if (equal? resolvent '(#f)) #f (loop (sort clauses (lambda (x y) (< (length x) (length y)))))))]))
+65                                                                        ; **sort the clauses according to the length of clause  
+66                                                                        ; to propogate the unit or short clauses
+
+
+
+
+
+Print the clauses !
