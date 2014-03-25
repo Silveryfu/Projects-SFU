@@ -1,5 +1,85 @@
 #lang racket
-(include "./assn3test-cnf.rkt")            
+(include "./assn3test.rkt")
+(include "./assn3test-cnf.rkt")
+
+;----------- CNF-Convert------------;
+; covert all symbol input into string
+(define (all-to-string my-symbol)
+  (cond [(null? my-symbol) ""]
+        [else (if (list? (car my-symbol))
+                  (string-append "(" (symbol->string (car (car my-symbol)))
+                             (all-to-string (cdr (car my-symbol))) ")")
+                  (string-append (symbol->string (car my-symbol))
+                             (all-to-string (cdr my-symbol))))]))
+
+; invert a clause
+(define (invert P)     
+  (define result P)
+  (set! result (regexp-replace* "\\^" result "!"))
+  (set! result (regexp-replace* "\\/" result "^"))
+  (set! result (regexp-replace* "!" result "/"))
+  (set! result (regexp-replace* "[a-zA-Z0-9]+" result 
+                                (lambda (all)
+                                  (string-append "~" all))))
+  (set! result (regexp-replace* "~~" result ""))
+  result
+)
+
+; when flag = 1, convert query, 0 convert KB
+(define (CNF-Convert clauses flag)
+  (define result '())
+  (define queries '())
+  (define Q '())
+  (for ([clause clauses])
+    (set! result (append result (list (CNF (all-to-string clause))))))
+ 
+  ; formalize the queries as list of lists, and negate literals
+  (if (equal? 1 flag) 
+      (begin  
+      (for ([i result])
+        (when (not (null? Q)) 
+          (set! queries (append queries (list Q))))
+        (set! Q '())
+        (for ([j i])
+            ;(displayln j)
+            (set! Q 
+            (append Q 
+            (list (list(string->symbol
+                  ((lambda (l) 
+                  (if (equal? (string-ref l 0) #\~)
+                      (string-trim l "~") 
+                      (string-append "~" l)))
+                      (symbol->string j)))))))))
+               (append queries (list Q)))                          
+  result)) 
+
+; convert on top of strings
+(define (CNF sentence)
+  (define P "")
+  (define Q "")
+  (cond [(regexp-match? #rx"<=>" sentence) 
+            (begin 
+               (set! P (list-ref(regexp-split #rx"<=>" sentence) 0))
+               (set! Q (list-ref(regexp-split #rx"<=>" sentence) 1))
+               (list (CNF (string-append P "=>" Q)) (CNF (string-append Q "=>" P))))]
+        [(regexp-match? #rx"=>" sentence)
+            (begin
+               (set! P (list-ref(regexp-split #rx"=>" sentence) 0))
+               (set! Q (list-ref(regexp-split #rx"=>" sentence) 1))
+               (append (CNF (invert P)) (CNF Q)))]
+        [(regexp-match? #rx"\\/" sentence)
+            (begin 
+               (set! P (list-ref(regexp-split #rx"\\/" sentence) 0))
+               (set! Q (list-ref(regexp-split #rx"\\/" sentence) 1))
+               (list (string->symbol P) (string->symbol Q)))]
+        [(regexp-match? #rx"~(\\(.+\\))" sentence)  ;need to remove the "(" and ")" after invert
+            (CNF (regexp-replace* "[\\(\\)]" (invert (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1)) ""))]
+        [(regexp-match? #rx"~~" sentence)
+               (list(string->symbol (regexp-replace* "~~" sentence "")))  ]
+        [else (list (string->symbol sentence))]
+        ))
+ 
+;----------- PL-Resolution ------------;
 
 (define (complementary-literals? l1 l2)
   (let* ([l1str (symbol->string l1)]
@@ -96,13 +176,12 @@
 
 
 ;the provided test cases
-
 (displayln "The provided usual cases:\n")
-(PL-Resolution KB_CNF (list-ref queries_N_CNF 0) 0)
-(PL-Resolution KB_CNF (list-ref queries_N_CNF 1) 1)
-(PL-Resolution KB_CNF (list-ref queries_N_CNF 2) 2)
-(PL-Resolution KB_CNF (list-ref queries_N_CNF 3) 3)
-(PL-Resolution KB_CNF (list-ref queries_N_CNF 4) 4)
+(PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 0) 0)
+(PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 1) 1)
+(PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 2) 2)
+(PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 3) 3)
+(PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 4) 4)
 
 (displayln "\nOther corner cases:\n")
 (define KB_CNF_test_1
