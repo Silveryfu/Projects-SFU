@@ -8,23 +8,21 @@
                              (all-to-string (cdr my-symbol)))]))
 
 (define (CNF sentence)
-  (define temp '())
-  (cond [(not (regexp-match? #rx"[<^=>~/]" sentence)) (list (cons "" sentence))]
-        [(regexp-match? #rx"\\^" sentence) (for ([s (regexp-split #rx"\\^" sentence)])
-                                             (set! temp (append temp (CNF s))))
-                                           temp]
+  (define result '())
+  (define P "")
+  (define Q "")
+  (cond [(regexp-match? #rx"<=>" sentence) (begin 
+                                             (set! P (list-ref(regexp-split #rx"<=>" sentence) 0)
+                                             (set! Q (list-ref(regexp-split #rx"<=>" sentence) 0))
+                                             )
+                                             ]
+
+        
+        (regexp-split #rx"<=>" sentence)
+        
         
         [else (displayln "todo")]
         ))
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   
   
@@ -32,9 +30,7 @@
 ;(display (all-to-string (car (cdr KB))))
 ;(CNF (all-to-string (car (cdr KB))))
 
-(CNF "Fss^ss^ss")
-
-(list '(1 . 2))
+(CNF "P<=>Q")
 
 ;(regexp-split #rx"\\^" "fss^ssss")
 
