@@ -1,6 +1,6 @@
 #lang racket
+
 (include "./assn3test.rkt")
-(include "./assn3test-cnf.rkt")
 
 ;----------- CNF-Convert------------;
 ; covert all symbol input into string
@@ -57,24 +57,32 @@
 (define (CNF sentence)
   (define P "")
   (define Q "")
-  (cond [(regexp-match? #rx"<=>" sentence) 
+  (cond [(regexp-match? #rx"<=>" sentence)         ; lowest precedence "<=>"
             (begin 
                (set! P (list-ref(regexp-split #rx"<=>" sentence) 0))
                (set! Q (list-ref(regexp-split #rx"<=>" sentence) 1))
                (list (CNF (string-append P "=>" Q)) (CNF (string-append Q "=>" P))))]
-        [(regexp-match? #rx"=>" sentence)
+        [(regexp-match? #rx"=>" sentence)          ; second lowest precedence "<=>"
             (begin
                (set! P (list-ref(regexp-split #rx"=>" sentence) 0))
                (set! Q (list-ref(regexp-split #rx"=>" sentence) 1))
                (append (CNF (invert P)) (CNF Q)))]
-        [(regexp-match? #rx"\\/" sentence)
+        [(regexp-match? #rx"~(\\(.+\\))" sentence) ; the parenthesis with negation 
+            (CNF (regexp-replace* "[\\(\\)]" (invert (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1)) ""))]
+                                                   ; need to remove the "(" and ")" after invert
+        [(regexp-match? #rx"(\\(.+\\))" sentence)  ; the parenthesis 
+            (CNF (regexp-replace* "[\\(\\)]" (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1) ""))]
+        [(regexp-match? #rx"\\/" sentence)         ; the union "/"
             (begin 
                (set! P (list-ref(regexp-split #rx"\\/" sentence) 0))
                (set! Q (list-ref(regexp-split #rx"\\/" sentence) 1))
                (list (string->symbol P) (string->symbol Q)))]
-        [(regexp-match? #rx"~(\\(.+\\))" sentence)  ;need to remove the "(" and ")" after invert
-            (CNF (regexp-replace* "[\\(\\)]" (invert (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1)) ""))]
-        [(regexp-match? #rx"~~" sentence)
+        [(regexp-match? #rx"\\^" sentence)         ; the intersection "^"
+            (begin                 
+               (set! P (list-ref(regexp-split #rx"\\^" sentence) 0))
+               (set! Q (list-ref(regexp-split #rx"\\^" sentence) 1))
+               (list (string->symbol P) (string->symbol Q)))]
+        [(regexp-match? #rx"~~" sentence)          ; remove double negations
                (list(string->symbol (regexp-replace* "~~" sentence "")))  ]
         [else (list (string->symbol sentence))]
         ))
@@ -147,36 +155,10 @@
 
 
 
-#|
-;unit tests
-(contain-empty? KB_CNF)
-(displayln KB_CNF)
-(define clauses
- '((~A B E)
-  (~B A)
-  (~E A)
-  (~E D)
-  (~C ~F ~B)
-  (~E B)
-  (~B F)
-  (~B C)
-  (A B))
-   )
-
-(define new_clause
-  '((A B))
-  )
-
-(PL-Resolution clauses new_clause 0)
-(PL-Resolve '(~a b c) '(a ~b d))
-(remove-exist '((b c ~b d)) '((b c ~b d) (~a c a d)))
-(empty? (remove-exist clauses new_clause))
-(equal? '(FirstGrade) (list-ref KB_CNF 0))
-|#
-
+;----------- Test Session -------------;
 
 ;the provided test cases
-(displayln "The provided usual cases:\n")
+(displayln "The supplied cases:\n")
 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 0) 0)
 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 1) 1)
 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 2) 2)
@@ -184,6 +166,8 @@
 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 4) 4)
 
 (displayln "\nOther corner cases:\n")
+
+; for convenience and being more clear, use the CNF directly
 (define KB_CNF_test_1
   '((FirstGrade) (~FirstGrade)))
 
@@ -196,7 +180,8 @@
 (define KB_CNF_test_4
   '((q p)))
 
-(define queries_N_CNF_test  ;queries are presented as ~query in CNF, 
+; Notice: queries are presented as ~query in CNF
+(define queries_N_CNF_test  
   '(((FirstGrade) (~Boy))
     ((FirstGrade) (~FirstGrade))
     ((~Boy Boy))
@@ -215,14 +200,15 @@
 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 1) 12); given an empty KB, tautology query
 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 2) 13); given an empty KB, contradictory query
 (displayln "")
-(PL-Resolution KB_CNF (list-ref queries_N_CNF_test 0) 14)       ; given a contingencies KB, contingencies query
-(PL-Resolution KB_CNF (list-ref queries_N_CNF_test 1) 15)       ; given a contingencies KB, tautology query
-(PL-Resolution KB_CNF (list-ref queries_N_CNF_test 2) 16)       ; given a contingencies KB, contradictory query
+(PL-Resolution (CNF-Convert KB 0) (list-ref queries_N_CNF_test 0) 14) ; given a contingencies KB, contingencies query
+(PL-Resolution (CNF-Convert KB 0) (list-ref queries_N_CNF_test 1) 15) ; given a contingencies KB, tautology query
+(PL-Resolution (CNF-Convert KB 0) (list-ref queries_N_CNF_test 2) 16) ; given a contingencies KB, contradictory query
 (displayln "")
 
 (PL-Resolution KB_CNF_test_4 (list-ref queries_N_CNF_test 4) 17); test the case where there are multiple complementary pairs
 
 ; the case in Question 2
+(displayln "\nAssm3 Question 2:")
 (define clauses
  '((~A B E)
   (~B A)
@@ -240,3 +226,30 @@
   )
 
 (PL-Resolution clauses new_clause 18)
+
+; Test for converter only
+
+(displayln "\nTest for converter only, show the correctness of the CNF:")
+(displayln "\nKB:")
+(display "original: ")
+(displayln KB)
+(display "in CNF: ")
+(displayln (CNF-Convert KB 0))
+(displayln "\nQueries:")
+(display "original: ")
+(displayln queries)
+(display "in CNF: ")
+(displayln (CNF-Convert queries 1))
+(displayln "\nSome other tests:")
+
+(define Convert_test
+  '((A=>B^C)
+    (~(A/B))
+    (A^C<=>~B^D)))
+
+(display "original: ")
+(displayln Convert_test)
+(display "in CNF: ")
+(displayln (CNF-Convert Convert_test 0))
+
+

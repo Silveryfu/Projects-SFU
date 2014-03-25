@@ -67,78 +67,165 @@ Therefore, KB ^ (~alpha) is unsatisfiable; by contradiction, KB entails alpha = 
 Question 3
 
 
-The program reads the test cases from the assn3test-cnf.rkt file. It not only ensures the correctness of the results, but also contains quite a few improvements on its efficiency.
+The program reads the test cases from the assn3test.rkt file, converts and do resolution.  In the resolution part, it not only ensures the correctness of the results, but also contains quite a few improvements on its efficiency.
 
 
 Code Section:
 
-1 #lang racket
-2 (include "./assn3test-cnf.rkt")            
-3 
-4 (define (complementary-literals? l1 l2)
-5   (let* ([l1str (symbol->string l1)]
-6          [l2str (symbol->string l2)]
-7          [l1neg (equal? #\~ (string-ref l1str 0))]
-8          [l2neg (equal? #\~ (string-ref l2str 0))]
-9          [symbol1 (if l1neg (substring l1str 1) l1str)]
-10          [symbol2 (if l2neg (substring l2str 1) l2str)])
-11     (and (xor l1neg l2neg)
-12          (equal? symbol1 symbol2))))
-13 
-14 (define (contain-empty? clauses)           ; check if contains empty clause
-15   (define flag #f)
-16   (for/or ([i clauses])
-17     (when (null? i) (set! flag #t)) flag)
-18   flag)
-19 
-20 (define (remove-exist clauses new_clause)   ; remove those clauses already exist
-21   (define result new_clause)
-22   (if (equal? new_clause '(#f)) '()  
-23   (begin 
-24     (for ([i clauses])
-25       (for ([j new_clause])
-26         (when (equal? (list->set i) (list->set j)) (set! result (remove j result))))) result)))
-27                                                                    ; **use hash set to avoid duplication
-28 
-29 (define (PL-Resolve C1 C2)    
-30   (define resolvent '(#f))                             ; the resolvent is initialized #f, to represent the case as no resolvent
-31   (for ([i C1])              
-32     (for ([j C2])
-33       (cond [(complementary-literals? i j)    ; once find a complementary pair, add to the resolvents
-34              (if (equal? resolvent '(#f)) (set! resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))
-35                               (set! resolvent (append resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))))]
-36             [else #t])))
-37   resolvent)
-38 
-39 (define (PL-Resolution KB alpha num)
-40   (define clauses (append alpha KB))       ; **Left-append alpha
-41   (if (null? KB) (if (loop alpha)                ; handle the case when KB is empty
-42                      (fprintf (current-output-port) 
-43                               "KB entails query ~s\n" num)
-44                      (fprintf (current-output-port) 
-45                               "KB does not entail query ~s\n" num))
-46   (if (loop clauses) (fprintf (current-output-port)  ; the recursive call
-47                               "KB entails query ~s\n" num)
-48                      (fprintf (current-output-port) 
-49                               "KB does not entail query ~s\n" num))))
-50  
-51 (define (loop clauses)                            
-52   (define L (length clauses))
-53   (define resolvent '(#f))        
-54   ;(displayln clauses)                                                  
-55   (cond [(contain-empty? clauses) #t]
-56         [else (begin 
-57                 (for ([i (in-range L)])
-58                   (for ([j (in-range (add1 i) L)])
-59                     #:break (not (equal? '(#f) resolvent))                ; **keep a focus on the goal
-60                     (set! resolvent (remove-exist clauses (PL-Resolve (list-ref clauses i) (list-ref clauses j))))
-61                     (cond [(null? resolvent) (set! resolvent '(#f))]   ; if all new clauses already exist, ignore 
-62                           [else (when (not (equal? resolvent '(#f)))     ; and reset resolvent
-63                                   (set! clauses (append resolvent clauses)))]))) ; **left append the new resolvent
-64                 (if (equal? resolvent '(#f)) #f (loop (sort clauses (lambda (x y) (< (length x) (length y)))))))]))
-65                                                                        ; **sort the clauses according to the length of clause  
-66                                                                        ; to propogate the unit or short clauses
-
+1 (include "./assn3test.rkt")
+2 
+3 ;----------- CNF-Convert------------;
+4 ; covert all symbol input into string
+5 (define (all-to-string my-symbol)
+6   (cond [(null? my-symbol) ""]
+7         [else (if (list? (car my-symbol))
+8                   (string-append "(" (symbol->string (car (car my-symbol)))
+9                              (all-to-string (cdr (car my-symbol))) ")")
+10                   (string-append (symbol->string (car my-symbol))
+11                              (all-to-string (cdr my-symbol))))]))
+12 
+13 ; invert a clause
+14 (define (invert P)     
+15   (define result P)
+16   (set! result (regexp-replace* "\\^" result "!"))
+17   (set! result (regexp-replace* "\\/" result "^"))
+18   (set! result (regexp-replace* "!" result "/"))
+19   (set! result (regexp-replace* "[a-zA-Z0-9]+" result 
+20                                 (lambda (all)
+21                                   (string-append "~" all))))
+22   (set! result (regexp-replace* "~~" result ""))
+23   result
+24 )
+25 
+26 ; when flag = 1, convert query, 0 convert KB
+27 (define (CNF-Convert clauses flag)
+28   (define result '())
+29   (define queries '())
+30   (define Q '())
+31   (for ([clause clauses])
+32     (set! result (append result (list (CNF (all-to-string clause))))))
+33  
+34   ; formalize the queries as list of lists, and negate literals
+35   (if (equal? 1 flag) 
+36       (begin  
+37       (for ([i result])
+38         (when (not (null? Q)) 
+39           (set! queries (append queries (list Q))))
+40         (set! Q '())
+41         (for ([j i])
+42             ;(displayln j)
+43             (set! Q 
+44             (append Q 
+45             (list (list(string->symbol
+46                   ((lambda (l) 
+47                   (if (equal? (string-ref l 0) #\~)
+48                       (string-trim l "~") 
+49                       (string-append "~" l)))
+50                       (symbol->string j)))))))))
+51                (append queries (list Q)))                          
+52   result)) 
+53 
+54 ; convert on top of strings
+55 (define (CNF sentence)
+56   (define P "")
+57   (define Q "")
+58   (cond [(regexp-match? #rx"<=>" sentence)         ; lowest precedence "<=>"
+59             (begin 
+60                (set! P (list-ref(regexp-split #rx"<=>" sentence) 0))
+61                (set! Q (list-ref(regexp-split #rx"<=>" sentence) 1))
+62                (list (CNF (string-append P "=>" Q)) (CNF (string-append Q "=>" P))))]
+63         [(regexp-match? #rx"=>" sentence)          ; second lowest precedence "<=>"
+64             (begin
+65                (set! P (list-ref(regexp-split #rx"=>" sentence) 0))
+66                (set! Q (list-ref(regexp-split #rx"=>" sentence) 1))
+67                (append (CNF (invert P)) (CNF Q)))]
+68         [(regexp-match? #rx"~(\\(.+\\))" sentence) ; the parenthesis with negation 
+69             (CNF (regexp-replace* "[\\(\\)]" (invert (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1)) ""))]
+70                                                    ; need to remove the "(" and ")" after invert
+71         [(regexp-match? #rx"(\\(.+\\))" sentence)  ; the parenthesis 
+72             (CNF (regexp-replace* "[\\(\\)]" (list-ref (regexp-match #rx"~(\\(.+\\))" sentence) 1) ""))]
+73         [(regexp-match? #rx"\\/" sentence)         ; the union "/"
+74             (begin 
+75                (set! P (list-ref(regexp-split #rx"\\/" sentence) 0))
+76                (set! Q (list-ref(regexp-split #rx"\\/" sentence) 1))
+77                (list (string->symbol P) (string->symbol Q)))]
+78         [(regexp-match? #rx"\\^" sentence)         ; the intersection "^"
+79             (begin                 
+80                (set! P (list-ref(regexp-split #rx"\\^" sentence) 0))
+81                (set! Q (list-ref(regexp-split #rx"\\^" sentence) 1))
+82                (list (string->symbol P) (string->symbol Q)))]
+83         [(regexp-match? #rx"~~" sentence)          ; remove double negations
+84                (list(string->symbol (regexp-replace* "~~" sentence "")))  ]
+85         [else (list (string->symbol sentence))]
+86         ))
+87  
+88 ;----------- PL-Resolution ------------;
+89 
+90 (define (complementary-literals? l1 l2)
+91   (let* ([l1str (symbol->string l1)]
+92          [l2str (symbol->string l2)]
+93          [l1neg (equal? #\~ (string-ref l1str 0))]
+94          [l2neg (equal? #\~ (string-ref l2str 0))]
+95          [symbol1 (if l1neg (substring l1str 1) l1str)]
+96          [symbol2 (if l2neg (substring l2str 1) l2str)])
+97     (and (xor l1neg l2neg)
+98          (equal? symbol1 symbol2))))
+99 
+100 (define (contain-empty? clauses)           ; check if contains empty clause
+101   (define flag #f)
+102   (for/or ([i clauses])
+103     (when (null? i) (set! flag #t)) flag)
+104   flag)
+105 
+106 (define (remove-exist clauses new_clause)  ; remove those clauses already exist
+107   (define result new_clause)
+108   (if (equal? new_clause '(#f)) '()  
+109   (begin 
+110     (for ([i clauses])
+111       (for ([j new_clause])
+112         (when (equal? (list->set i) (list->set j)) (set! result (remove j result))))) result)))
+113                                            ; **use hash set to avoid duplication
+114 
+115 (define (PL-Resolve C1 C2)    
+116   (define resolvent '(#f))                 ; the resolvent is initialized #f, to represent the case as no resolvent
+117   (for ([i C1])              
+118     (for ([j C2])
+119       (cond [(complementary-literals? i j) ; once find a complementary pair, add to the resolvents
+120              (if (equal? resolvent '(#f)) (set! resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))
+121                               (set! resolvent (append resolvent (list (remove-duplicates (append (remove i C1) (remove j C2)))))))]
+122             [else #t])))
+123   resolvent)
+124 
+125 (define (PL-Resolution KB alpha num)
+126   (define clauses (append alpha KB))       ; **Left-append alpha
+127   (if (null? KB) (if (loop alpha)          ; handle the case when KB is empty
+128                      (fprintf (current-output-port) 
+129                               "KB entails query ~s\n" num)
+130                      (fprintf (current-output-port) 
+131                               "KB does not entail query ~s\n" num))
+132   (if (loop clauses) (fprintf (current-output-port)  ; the recursive call
+133                               "KB entails query ~s\n" num)
+134                      (fprintf (current-output-port) 
+135                               "KB does not entail query ~s\n" num))))
+136  
+137 (define (loop clauses)
+138   (define L (length clauses))
+139   (define resolvent '(#f))        
+140   ;(displayln clauses)                     ; uncomment this to show the clauses each iterations                                           
+141   (cond [(contain-empty? clauses) #t]
+142         [else (begin 
+143                 (for ([i (in-range L)])
+144                   (for ([j (in-range (add1 i) L)])
+145                     #:break (not (equal? '(#f) resolvent))             ; **keep a focus on the goal
+146                     (set! resolvent (remove-exist clauses (PL-Resolve (list-ref clauses i) (list-ref clauses j))))
+147                     (cond [(null? resolvent) (set! resolvent '(#f))]   ; if all new clauses already exist, ignore 
+148                           [else (when (not (equal? resolvent '(#f)))   ; and reset resolvent
+149                                   (set! clauses (append resolvent clauses)))]))) ; **left append the new resolvent
+150                 (if (equal? resolvent '(#f)) #f (loop (sort clauses (lambda (x y) (< (length x) (length y)))))))]))
+151                                                                        ; **sort the clauses according to the length of clause  
+152                                                                        ; to propogate the unit or short clauses
+153 
+154 
 
 As shown in the code and code comments (marked as **), there are several implementations to improve the efficiency of PL-Resolution, which includes:
 
@@ -156,13 +243,11 @@ Testing Section:
 
 Firstly, the supplied tests:
 
-1 (displayln "The provided usual cases:\n")
-2 (PL-Resolution KB_CNF (list-ref queries_N_CNF 0) 0)
-3 (PL-Resolution KB_CNF (list-ref queries_N_CNF 1) 1)
-4 (PL-Resolution KB_CNF (list-ref queries_N_CNF 2) 2)
-5 (PL-Resolution KB_CNF (list-ref queries_N_CNF 3) 3)
-6 (PL-Resolution KB_CNF (list-ref queries_N_CNF 4) 4)
-
+1 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 0) 0)
+2 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 1) 1)
+3 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 2) 2)
+4 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 3) 3)
+5 (PL-Resolution (CNF-Convert KB 0) (list-ref (CNF-Convert queries 1) 4) 4)
 Output:
 
 KB entails query 0
@@ -208,7 +293,7 @@ Define some KBs and queries:
 Do the test:
 
 Given a contradictory KB
-
+ 	
 1 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 0) 5)   ; given a contradictory KB, contingencies query
 2 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 1) 6)   ; given a contradictory KB, tautology query
 3 (PL-Resolution KB_CNF_test_1 (list-ref queries_N_CNF_test 2) 7)   ; given a contradictory KB, contradictory query
@@ -231,7 +316,7 @@ KB does not entail query 8
 KB entails query 9
 KB does not entail query 10
 
-Given a empty KB
+Given an empty KB
 
 1 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 0) 11)  ; given an empty KB, contingencies query
 2 (PL-Resolution KB_CNF_test_3 (list-ref queries_N_CNF_test 1) 12)  ; given an empty KB, tautology query
@@ -287,3 +372,19 @@ Finally, we use the Question 2 for testing:
 Output:
 
 KB entails query 18
+
+Test for converter: (Only outputs here)
+
+Test for converter, show the correctness of the CNF conversion:
+
+KB:
+original: ((FirstGrade) (FirstGrade => Child) (Child ^ Male => Boy) (Kindergarten => Child) (Child ^ Female => Girl) (Female))
+in CNF: ((FirstGrade) (~FirstGrade Child) (~Child ~Male Boy) (~Kindergarten Child) (~Child ~Female Girl) (Female))
+
+Queries:
+original: ((Girl) (~ Boy) (~~Boy) (~ (FirstGrade ^ ~ ~ Girl)) (Boy / Child))
+in CNF: (((~Girl)) ((Boy)) ((~Boy)) ((FirstGrade) (Girl)) ((~Boy) (~Child)))
+
+Some other tests:
+original: ((A=>B^C) (~ (A/B)) (A^C<=>~B^D))
+in CNF: ((~A B C) (~A ~B) ((~A ~C ~B D) (B ~D A C)))
