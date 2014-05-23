@@ -1,0 +1,22 @@
+#!/bin/bash
+
+IPS=$(ypcat hosts |
+      grep 192.168.0 |
+      sort -u -t . -k 4,4n |
+      awk '{print $1}') # get the info
+	  
+for IP in $IPS
+do
+        ping -c 2 $IP > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+                HOSTNAME=$(host $IP | awk '{print $5}' | sed 's/.$//')
+                MAC=$(arp -a $IP | awk '{print $4}')
+                if [ $? -eq 0 ]; then
+                        echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
+                else
+                        echo "other failure"
+                fi
+        else
+                echo "the host ("$IP") did not respond to queries"
+        fi
+done
