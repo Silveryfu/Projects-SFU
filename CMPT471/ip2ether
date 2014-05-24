@@ -1,22 +1,57 @@
 #!/bin/bash
+#
+# Prints a list of IP address to Ethernet address mappings
+# for hosts whose IP address matches 192.168.0.0/24
+# Author: Silvery
 
-IPS=$(ypcat hosts |
-      grep 192.168.0 |
-      sort -u -t . -k 4,4n |
-      awk '{print $1}') # get the info
-	  
-for IP in $IPS
-do
-        ping -c 2 $IP > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-                HOSTNAME=$(host $IP | awk '{print $5}' | sed 's/.$//')
-                MAC=$(arp -a $IP | awk '{print $4}')
-                if [ $? -eq 0 ]; then
-                        echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
-                else
-                        echo "other failure"
-                fi
-        else
-                echo "the host ("$IP") did not respond to queries"
-        fi
+# store to variable IPS a sorted list of target IPs using:
+# ypcat hosts, get a list of all hosts and their IPs
+# grep, only leave those with prefix 192.168.0.0/24
+# sort, sort according to the last field of IP
+# awk, obtain only the first column, namely IPs  
+IPS=$(ypcat hosts |    
+        grep 192.168.0 |
+        sort -u -t . -k 4,4n |
+        awk '{print $1}')  
+
+# initialize three counters
+RESPOND=0; NOT_RESPOND=0; OTHERFAIL=0
+
+# get the number of IP scanned using wc (wordcount)
+NUM_SCANNED=$(echo $IPS | wc -w) 
+
+# loop over all target IPs
+for IP in $IPS; do
+  # ping this IP to get arp cache; dump the output
+  ping -c 2 $IP > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    RESPOND=$((RESPOND+1))
+    # obtain the host name of this IP using "host" command;
+    HOSTNAME=$(host $IP | awk '{print $5}' | sed 's/.$//')	
+    if [ $? -eq 0 ]; then
+      # obtain the mapped MAC address using "arp -a"
+      MAC=$(arp -a $IP | awk '{print $4}')
+      # check if can obtain a valid MAC address
+      if [ $? -eq 0 ] && \
+           echo $MAC | grep -qE "^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"; then		
+        echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
+      else
+	OTHERFAIL=$((OTHERFAIL+1))
+	echo "other failure on"$IP
+      fi
+    else
+      OTHERFAIL=$((OTHERFAIL+1))
+      echo "other failure on "$IP
+    fi
+  else
+    NOT_RESPOND=$((NOT_RESPOND+1))
+    echo "the host ("$IP") did not respond to queries"
+  fi
 done
+
+echo "****************************************"
+echo "Total number of IP addresses scanned: "$NUM_SCANNED
+echo "The number of IP addresses responded: "$RESPOND
+echo "The number of IP addresses not responded: "$NOT_RESPOND
+echo "Other failures: "$OTHERFAIL
+echo "*****************************************"
