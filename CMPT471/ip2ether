@@ -26,19 +26,14 @@ for IP in $IPS; do
   ping -c 2 $IP > /dev/null 2>&1
   if [ $? -eq 0 ]; then
     RESPOND=$((RESPOND+1))
-    # obtain the host name of this IP using "host" command;
-    HOSTNAME=$(host $IP | awk '{print $5}' | sed 's/.$//')	
-    if [ $? -eq 0 ]; then
-      # obtain the mapped MAC address using "arp -a"
-      MAC=$(arp -a $IP | awk '{print $4}')
-      # check if can obtain a valid MAC address
-      if [ $? -eq 0 ] && \
-           echo $MAC | grep -qE "^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"; then		
-        echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
-      else
-	OTHERFAIL=$((OTHERFAIL+1))
-	echo "other failure on"$IP
-      fi
+    # obtain the host name of this IP, using ypcat, sort, grep, awk again;
+    HOSTNAME=$(ypcat hosts | sort -u | grep $IP[[:space:]] | awk '{print $2}')
+    # obtain the mapped MAC address using "arp -a"
+    MAC=$(arp -a $IP | awk '{print $4}')
+    # check if can obtain a valid MAC address
+    if [ $? -eq 0 ] && \
+         echo $MAC | grep -qE "^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"; then		
+      echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
     else
       OTHERFAIL=$((OTHERFAIL+1))
       echo "other failure on "$IP
