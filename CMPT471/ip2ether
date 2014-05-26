@@ -32,11 +32,23 @@ for IP in $IPS; do
     MAC=$(arp -a $IP | awk '{print $4}')
     # check if can obtain a valid MAC address
     if [ $? -eq 0 ] && \
-         echo $MAC | grep -qE "^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"; then		
+         echo $MAC | grep -qE "^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$"; then
       echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$MAC
     else
-      OTHERFAIL=$((OTHERFAIL+1))
-      echo "other failure on "$IP
+      # exception handle; as arp -a cannot retrieve local mapping 
+      # check if this IP is the local IP; if it is, get the mapping using ifconfig
+      LOCALMAC=$(ifconfig -a | 
+                 grep -A1 HWaddr | 
+                 grep -B1 $IP | 
+                 grep HWaddr | 
+                 awk '{print $5}')
+      # when this is not a local mapping case, it is a failure
+      if [[ -z $LOCALMAC ]]; then
+        OTHERFAIL=$((OTHERFAIL+1)) 
+        echo "other failure on "$IPdd
+      else 
+        echo "IP address " $IP "("$HOSTNAME") has Ethernet address "$LOCALMAC
+      fi
     fi
   else
     NOT_RESPOND=$((NOT_RESPOND+1))
@@ -50,3 +62,4 @@ echo "The number of IP addresses responded: "$RESPOND
 echo "The number of IP addresses not responded: "$NOT_RESPOND
 echo "Other failures: "$OTHERFAIL
 echo "*****************************************"
+
