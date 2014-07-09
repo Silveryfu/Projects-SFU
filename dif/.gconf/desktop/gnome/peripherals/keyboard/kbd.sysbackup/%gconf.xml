@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<gconf>
+        <entry name="model" mtime="1248305128" type="string">
+                <stringvalue>generic</stringvalue>
+        </entry>
+        <entry name="layouts" mtime="1248305128" type="list" ltype="string">
+                <li type="string">
+                        <stringvalue>us</stringvalue>
+                </li>
+        </entry>
+</gconf>

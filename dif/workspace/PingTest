@@ -1,0 +1,5 @@
+if [ 1 = 1 ] && echo 3D:F2:C9:A6:B3:4F | grep -qE "^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$"; then
+echo "Yes" 
+else
+echo "No"
+fi

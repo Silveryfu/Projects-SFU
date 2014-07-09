@@ -19,28 +19,28 @@
  * 00:50:56:a4:67:5e; And IP address
  * is Autumn's IP address
  */
-//#define DEST_MAC_1 0x00
-//#define DEST_MAC_2 0x50
-//#define DEST_MAC_3 0x56
-//#define DEST_MAC_4 0xA4
-//#define DEST_MAC_5 0x67
-//#define DEST_MAC_6 0x5E
+#define DEST_MAC_1 0x00
+#define DEST_MAC_2 0x50
+#define DEST_MAC_3 0x56
+#define DEST_MAC_4 0xA4
+#define DEST_MAC_5 0x67
+#define DEST_MAC_6 0x5E
 
-#define DEST_MAC_1 0x84
-#define DEST_MAC_2 0x2B
-#define DEST_MAC_3 0x2B
-#define DEST_MAC_4 0x8F
-#define DEST_MAC_5 0x7E
-#define DEST_MAC_6 0xD1
+//#define DEST_MAC_1 0x84
+//#define DEST_MAC_2 0x2B
+//#define DEST_MAC_3 0x2B
+//#define DEST_MAC_4 0x8F
+//#define DEST_MAC_5 0x7E
+//#define DEST_MAC_6 0xD1
 
-//const char *DEST_IP = "172.17.1.19";
-const char *DEST_IP = "192.168.1.16";
+const char *DEST_IP = "172.17.1.19";
+//const char *DEST_IP = "192.168.1.16";
 
 /* The default source IP address is
  * host Spring
  */
-//const char *SOURCE_IP = "172.17.1.20";
-const char *SOURCE_IP = "192.168.1.100";
+const char *SOURCE_IP = "172.17.1.20";
+//const char *SOURCE_IP = "192.168.1.100";
 
 /* The checksum funtion */
 
@@ -84,7 +84,7 @@ int main() {
 	ifioctl.ifr_ifrn.ifrn_name[0] = 'e' ;
 	ifioctl.ifr_ifrn.ifrn_name[1] = 't' ;
 	ifioctl.ifr_ifrn.ifrn_name[2] = 'h' ;
-	ifioctl.ifr_ifrn.ifrn_name[3] = '0' ;
+	ifioctl.ifr_ifrn.ifrn_name[3] = '1' ;
 	ifioctl.ifr_ifrn.ifrn_name[4] = '\0' ;
 	std::cout << "Attempting to obtain interface number for "
 			  << ifioctl.ifr_ifrn.ifrn_name << " ... " ;
@@ -111,7 +111,7 @@ int main() {
 	  };
 
 	/*
-	  The address structure used for a packet socket. Family
+	  Define the address structure used for a packet socket. Family
 	  and interface index (ifindex) are necessary. sll_addr
 	  is unimportant for a raw packet socket. It's the address
 	  that's loaded in the frame that counts.
@@ -119,7 +119,7 @@ int main() {
 
 	struct sockaddr_ll dllAddr ;
 
-	dllAddr.sll_family = AF_PACKET;
+	dllAddr.sll_family = AF_PACKET;  // AF_PACKET and PF_PACKET are the same
 	dllAddr.sll_protocol = 0;
 	dllAddr.sll_ifindex = ifNdx;
 	dllAddr.sll_hatype = 0;

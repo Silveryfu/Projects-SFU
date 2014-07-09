@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<gconf>
+	<entry name="picture_options" mtime="1314854312" type="string">
+		<stringvalue>scaled</stringvalue>
+	</entry>
+	<entry name="picture_filename" mtime="1314854312" type="string">
+		<stringvalue>/usr/share/backgrounds/warty-final-ubuntu.png</stringvalue>
+	</entry>
+	<entry name="color_shading_type" mtime="1314854312" type="string">
+		<stringvalue>solid</stringvalue>
+	</entry>
+	<entry name="secondary_color" mtime="1314854312" type="string">
+		<stringvalue>#8f8f4a4a1c1c</stringvalue>
+	</entry>
+	<entry name="primary_color" mtime="1314854312" type="string">
+		<stringvalue>#6d6d6e6e6868</stringvalue>
+	</entry>
+</gconf>

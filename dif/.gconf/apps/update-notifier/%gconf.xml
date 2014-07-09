@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<gconf>
+        <entry name="default_action" mtime="1231359406" type="int" value="3">
+        </entry>
+</gconf>

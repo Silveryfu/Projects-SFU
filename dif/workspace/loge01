@@ -1,0 +1,38 @@
+IP address  192.168.0.1 (january.admin) has Ethernet address 00:50:56:a4:37:65
+IP address  192.168.0.2 (february.admin) has Ethernet address 00:50:56:a4:58:c7
+IP address  192.168.0.3 (march.admin) has Ethernet address 00:50:56:a4:75:d8
+IP address  192.168.0.4 (april.admin) has Ethernet address 00:50:56:a4:4c:9d
+IP address  192.168.0.5 (may.admin) has Ethernet address 00:50:56:a4:26:e9
+IP address  192.168.0.6 (june.admin) has Ethernet address 00:50:56:a4:00:51
+IP address  192.168.0.7 (july.admin) has Ethernet address 00:50:56:a4:3a:91
+IP address  192.168.0.8 (august.admin) has Ethernet address 00:50:56:a4:1d:77
+IP address  192.168.0.9 (september.admin) has Ethernet address 00:50:56:a4:48:f1
+IP address  192.168.0.10 (october.admin) has Ethernet address 00:50:56:a4:34:d8
+IP address  192.168.0.11 (november.admin) has Ethernet address 00:50:56:a4:2b:44
+IP address  192.168.0.12 (december.admin) has Ethernet address 00:50:56:a4:17:24
+IP address  192.168.0.13 (summer.admin) has Ethernet address 00:50:56:a4:7b:cb
+IP address  192.168.0.14 (fall.admin) has Ethernet address 00:50:56:a4:69:4a
+IP address  192.168.0.15 (winter.admin) has Ethernet address 00:50:56:a4:49:43
+IP address  192.168.0.16 (equinox.admin) has Ethernet address 00:50:56:a4:22:68
+IP address  192.168.0.17 (solstice.admin) has Ethernet address 00:50:56:a4:26:03
+IP address  192.168.0.18 (year.admin) has Ethernet address 00:50:56:a4:15:94
+IP address  192.168.0.19 (autumn.admin) has Ethernet address 00:50:56:a4:1e:f2
+IP address  192.168.0.20 (spring.admin) has Ethernet address 00:50:56:a4:73:27
+the host (192.168.0.31) did not respond to queries
+the host (192.168.0.32) did not respond to queries
+the host (192.168.0.33) did not respond to queries
+the host (192.168.0.34) did not respond to queries
+the host (192.168.0.35) did not respond to queries
+the host (192.168.0.51) did not respond to queries
+the host (192.168.0.52) did not respond to queries
+the host (192.168.0.53) did not respond to queries
+the host (192.168.0.54) did not respond to queries
+the host (192.168.0.55) did not respond to queries
+IP address  192.168.0.100 (seasons.admin) has Ethernet address 00:50:56:85:40:3b
+other failure on 192.168.0.101
+****************************************
+Total number of IP addresses scanned: 32
+The number of IP addresses responded: 22
+The number of IP addresses not responded: 10
+Other failures: 1
+*****************************************
